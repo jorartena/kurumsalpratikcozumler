@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Check, Globe2, Menu, X } from "lucide-react";
 import heroImage from "./assets/procurement-hero.png";
+import dispatchHero from "./assets/dispatch-hero.png";
+import dispatchDetail from "./assets/dispatch-detail.png";
+import orbitHero from "./assets/orbit-hero.png";
+import orbitDetail from "./assets/orbit-detail.png";
 import { content, languages, type Language } from "./content";
 
 const CheckIcon = () => <Check size={17} strokeWidth={3} />;
@@ -11,12 +15,69 @@ const sectionIds = {
   principles: "principles",
   contact: "contact",
 };
+const themeOptions = [
+  { id: "modern", label: "Modern" },
+  { id: "classic", label: "Klasik" },
+  { id: "premium", label: "Premium" },
+  { id: "supply", label: "Tedarik" },
+  { id: "flow", label: "S\u00fcre\u00e7" },
+  { id: "legacy", label: "Keskin" },
+  { id: "dispatch", label: "Sevk" },
+  { id: "orbit", label: "Y\u00f6rünge" },
+] as const;
+
+type ThemeId = (typeof themeOptions)[number]["id"];
+
+const themeImages: Record<ThemeId, { hero: string; detail: string }> = {
+  modern: { hero: heroImage, detail: heroImage },
+  classic: { hero: heroImage, detail: heroImage },
+  premium: { hero: heroImage, detail: heroImage },
+  supply: { hero: heroImage, detail: heroImage },
+  flow: { hero: heroImage, detail: heroImage },
+  legacy: { hero: heroImage, detail: heroImage },
+  dispatch: { hero: dispatchHero, detail: dispatchDetail },
+  orbit: { hero: orbitHero, detail: orbitDetail },
+};
+
+const themeStorageKey = "optimal-presentation-theme";
+
+const getStoredTheme = (): ThemeId => {
+  if (typeof window === "undefined") {
+    return "modern";
+  }
+
+  const storedTheme = window.localStorage.getItem(themeStorageKey);
+  const themeExists = themeOptions.some((option) => option.id === storedTheme);
+
+  return themeExists ? (storedTheme as ThemeId) : "modern";
+};
 
 export function App() {
   const [language, setLanguage] = useState<Language>("tr");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [selectedTheme, setSelectedTheme] = useState<ThemeId>(getStoredTheme);
   const t = content[language];
+  const selectedImages = themeImages[selectedTheme];
   const year = useMemo(() => new Date().getFullYear(), []);
+  const visualTiles = [
+    {
+      title: t.services.items[2].title,
+      copy: t.supplyScope.items[0],
+    },
+    {
+      title: t.services.items[3].title,
+      copy: t.supplyScope.items[1],
+    },
+    {
+      title: t.services.items[4].title,
+      copy: t.supplyScope.items[2],
+    },
+    {
+      title: t.services.items[5].title,
+      copy: t.supplyScope.items[3],
+    },
+  ];
 
   useEffect(() => {
     const elements = Array.from(document.querySelectorAll<HTMLElement>("[data-reveal]"));
@@ -50,6 +111,21 @@ export function App() {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    const updateHeaderState = () => {
+      setIsScrolled(window.scrollY > 24);
+    };
+
+    updateHeaderState();
+    window.addEventListener("scroll", updateHeaderState, { passive: true });
+
+    return () => window.removeEventListener("scroll", updateHeaderState);
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem(themeStorageKey, selectedTheme);
+  }, [selectedTheme]);
+
   const switchLanguage = (nextLanguage: Language) => {
     setLanguage(nextLanguage);
     setMenuOpen(false);
@@ -59,8 +135,8 @@ export function App() {
   const closeMenu = () => setMenuOpen(false);
 
   return (
-    <div className="site-shell">
-      <header className="site-header">
+    <div className={`site-shell theme-${selectedTheme}`}>
+      <header className={`site-header ${isScrolled ? "is-scrolled" : ""}`}>
         <a className="brand" href="#top" aria-label="Optimal Kurumsal Çözümler">
           <span className="brand-mark">O</span>
           <span>
@@ -110,7 +186,24 @@ export function App() {
         </div>
       </header>
 
-      <main id="top">
+
+      <aside className="theme-switcher" aria-label="Tasarım tarzı seçimi">
+        <span>Tarz</span>
+        <div>
+          {themeOptions.map((theme, index) => (
+            <button
+              key={theme.id}
+              type="button"
+              className={selectedTheme === theme.id ? "is-active" : ""}
+              onClick={() => setSelectedTheme(theme.id)}
+              aria-pressed={selectedTheme === theme.id}
+            >
+              {String(index + 1).padStart(2, "0")} {theme.label}
+            </button>
+          ))}
+        </div>
+      </aside>
+      <main className="site-main" id="top">
         <section className="hero-section">
           <div className="hero-copy" data-reveal>
             <p className="eyebrow">{t.hero.eyebrow}</p>
@@ -127,7 +220,7 @@ export function App() {
             </div>
           </div>
           <div className="hero-media" data-reveal aria-label="Tedarik destek danışmanlığı görseli">
-            <img src={heroImage} alt="" />
+            <img src={selectedImages.hero} alt="" />
           </div>
           <div className="hero-stats" data-reveal aria-label="Özet bilgiler">
             {t.hero.stats.map((stat) => (
@@ -137,6 +230,31 @@ export function App() {
               </div>
             ))}
           </div>
+          {selectedTheme === "dispatch" && (
+            <div className="dispatch-manifest" data-reveal aria-label={t.process.title}>
+              <span className="manifest-id" aria-hidden="true">MNF / 08-24</span>
+              <ol>
+                {t.process.steps.map((step, index) => (
+                  <li key={step.title}>
+                    <span>{String(index + 1).padStart(2, "0")}</span>
+                    <strong>{step.title}</strong>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
+          {selectedTheme === "orbit" && (
+            <div className="orbit-constellation" data-reveal aria-label={t.services.title}>
+              <span className="orbit-track orbit-track-a" aria-hidden="true" />
+              <span className="orbit-track orbit-track-b" aria-hidden="true" />
+              {t.services.items.slice(0, 4).map((service, index) => (
+                <a className={`orbit-node orbit-node-${index + 1}`} href={`#${sectionIds.services}`} key={service.title}>
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  <strong>{service.title}</strong>
+                </a>
+              ))}
+            </div>
+          )}
         </section>
 
         <section className="intro-band" data-reveal>
@@ -147,18 +265,34 @@ export function App() {
           <p>{t.intro.copy}</p>
         </section>
 
+        <section className="visual-story" aria-label={language === "tr" ? "Tedarik operasyonu gorsel ozeti" : "Visual summary of supply operations"}>
+          {visualTiles.map((item, index) => (
+            <article className={`visual-tile visual-tile-${index + 1}`} data-reveal key={item.title}>
+              <img src={selectedImages.detail} alt="" />
+              <div>
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <h3>{item.title}</h3>
+                <p>{item.copy}</p>
+              </div>
+            </article>
+          ))}
+        </section>
 
-        <section className="section compact-section">
+
+        <section className="section compact-section segment-section">
           <div className="section-heading" data-reveal>
             <p className="eyebrow">{t.segments.label}</p>
             <h2>{t.segments.title}</h2>
             <p>{t.segments.copy}</p>
           </div>
           <div className="segment-grid">
-            {t.segments.items.map((item) => {
+            {t.segments.items.map((item, index) => {
               const Icon = item.icon;
               return (
                 <article className="segment-card" data-reveal key={item.title}>
+                  <div className={`card-visual segment-visual segment-visual-${index + 1}`}>
+                    <img src={selectedImages.detail} alt="" />
+                  </div>
                   <Icon size={24} />
                   <h3>{item.title}</h3>
                   <p>{item.copy}</p>
@@ -167,17 +301,20 @@ export function App() {
             })}
           </div>
         </section>
-        <section className="section" id={sectionIds.services}>
+        <section className="section services-section" id={sectionIds.services}>
           <div className="section-heading" data-reveal>
             <p className="eyebrow">{t.nav.services}</p>
             <h2>{t.services.title}</h2>
             <p>{t.services.copy}</p>
           </div>
           <div className="service-grid">
-            {t.services.items.map((item) => {
+            {t.services.items.map((item, index) => {
               const Icon = item.icon;
               return (
                 <article className="feature-card" data-reveal key={item.title}>
+                  <div className={`card-visual service-visual service-visual-${index + 1}`}>
+                    <img src={selectedImages.detail} alt="" />
+                  </div>
                   <div className="icon-box">
                     <Icon size={22} />
                   </div>
@@ -190,7 +327,7 @@ export function App() {
         </section>
 
 
-        <section className="scope-panel" data-reveal>
+        <section className="scope-panel scope-section" data-reveal>
           <div className="scope-copy">
             <p className="eyebrow">{t.supplyScope.label}</p>
             <h2>{t.supplyScope.title}</h2>
@@ -205,7 +342,7 @@ export function App() {
             ))}
           </div>
         </section>
-        <section className="benefits-band" data-reveal>
+        <section className="benefits-band benefits-section" data-reveal>
           <div className="benefits-copy">
             <p className="eyebrow">{t.benefits.title}</p>
             <h2>{t.intro.title}</h2>
@@ -239,6 +376,9 @@ export function App() {
                     <h3>{step.title}</h3>
                     <p>{step.copy}</p>
                   </div>
+                  <div className={`process-visual process-visual-${index + 1}`}>
+                    <img src={selectedImages.detail} alt="" />
+                  </div>
                 </article>
               );
             })}
@@ -246,7 +386,7 @@ export function App() {
         </section>
 
 
-        <section className="quote-panel" data-reveal>
+        <section className="quote-panel quote-section" data-reveal>
           <div>
             <p className="eyebrow">{t.contact.label}</p>
             <h2>{t.quoteChecklist.title}</h2>
