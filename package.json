@@ -7,13 +7,12 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "qa:responsive": "node scripts/qa-responsive.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@fontsource-variable/manrope": "^5.3.0",
-    "@fontsource-variable/oswald": "^5.3.0",
     "@fontsource-variable/source-sans-3": "^5.3.0",
-    "@fontsource-variable/unbounded": "^5.3.0",
     "@vitejs/plugin-react": "^5.0.0",
     "lucide-react": "^0.468.0",
     "react": "^19.1.0",
@@ -23,6 +22,7 @@
   },
   "devDependencies": {
     "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3"
+    "@types/react-dom": "^19.2.3",
+    "playwright-core": "^1.62.0"
   }
 }
