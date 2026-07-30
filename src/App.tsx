@@ -1,5 +1,5 @@
 import { type FormEvent, useEffect, useMemo, useState } from "react";
-import { ArrowRight, Check, Globe2, Menu, X } from "lucide-react";
+import { ArrowRight, Check, ChevronDown, Globe2, Menu, X } from "lucide-react";
 import heroImage from "./assets/procurement-hero.png";
 import logo from "./assets/logo.svg";
 import { content, languages, type Language } from "./content";
@@ -11,14 +11,78 @@ const sectionIds = {
   contact: "contact",
 };
 
+type SectionTitleBlockProps = {
+  title: string;
+  subtitle?: string;
+};
+
+type AnimatedStatProps = {
+  target: number;
+  suffix?: string;
+  label: string;
+  delay: number;
+};
+
+function SectionTitleBlock({ title, subtitle }: SectionTitleBlockProps) {
+  return (
+    <div className="section-title-block">
+      <h2>{title}</h2>
+      <span className="section-title-divider" aria-hidden="true" />
+      {subtitle && <p className="section-subtitle">{subtitle}</p>}
+    </div>
+  );
+}
+
+function AnimatedStat({ target, suffix = "", label, delay }: AnimatedStatProps) {
+  const [value, setValue] = useState(() => (
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches ? target : 0
+  ));
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setValue(target);
+      return;
+    }
+
+    let frame = 0;
+    const startedAt = performance.now() + delay;
+    const duration = 1400;
+
+    const update = (now: number) => {
+      const progress = Math.min(1, Math.max(0, (now - startedAt) / duration));
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setValue(Math.round(target * eased));
+
+      if (progress < 1) {
+        frame = window.requestAnimationFrame(update);
+      }
+    };
+
+    frame = window.requestAnimationFrame(update);
+    return () => window.cancelAnimationFrame(frame);
+  }, [delay, target]);
+
+  const finalValue = `${target}${suffix}`;
+
+  return (
+    <div>
+      <strong aria-hidden="true">
+        <span className="hero-stat-number">{value}{suffix}</span>
+      </strong>
+      <span className="hero-stat-label" aria-hidden="true">{label}</span>
+      <span className="sr-only">{finalValue} — {label}</span>
+    </div>
+  );
+}
+
 export function App() {
   const [language, setLanguage] = useState<Language>("tr");
   const [menuOpen, setMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [formPreviewed, setFormPreviewed] = useState(false);
+  const [openServiceId, setOpenServiceId] = useState<string | null>(null);
   const t = content[language];
   const year = useMemo(() => new Date().getFullYear(), []);
-  const supplyStrip = t.supplyScope.items.slice(0, 4);
 
   useEffect(() => {
     const elements = Array.from(document.querySelectorAll<HTMLElement>("[data-reveal]"));
@@ -141,68 +205,22 @@ export function App() {
             <img src={heroImage} alt="" />
             <figcaption>{language === "tr" ? "Talep · Teklif · Tedarik · Teslimat" : "Request · Quote · Supply · Delivery"}</figcaption>
           </figure>
-          <div className="hero-stats" data-reveal aria-label={language === "tr" ? "Operasyon özeti" : "Operations summary"}>
-            {t.hero.stats.map((stat) => (
-              <div key={stat.label}><strong>{stat.value}</strong><span>{stat.label}</span></div>
+          <div className="hero-stats" aria-label={language === "tr" ? "Operasyon özeti" : "Operations summary"}>
+            {t.hero.stats.map((stat, index) => (
+              <AnimatedStat
+                key={stat.target}
+                target={stat.target}
+                suffix={"suffix" in stat ? stat.suffix : undefined}
+                label={stat.label}
+                delay={index * 100}
+              />
             ))}
           </div>
         </section>
 
-        <section className="intro-band" data-reveal>
-          <div><p className="eyebrow">{t.intro.label}</p><h2>{t.intro.title}</h2></div>
-          <p>{t.intro.copy}</p>
-        </section>
-
-        <section className="supply-strip" aria-label={language === "tr" ? "Tedarik özeti" : "Supply summary"}>
-          {supplyStrip.map((item, index) => (
-            <article data-reveal key={item}>
-              <span>{String(index + 1).padStart(2, "0")}</span><p>{item}</p>
-            </article>
-          ))}
-        </section>
-
-        <section className="section segment-section">
+        <section className="section process-section process-section-early" id={sectionIds.process}>
           <div className="section-heading" data-reveal>
-            <div><p className="eyebrow">{t.segments.label}</p><h2>{t.segments.title}</h2></div>
-            <p>{t.segments.copy}</p>
-          </div>
-          <div className="segment-grid">
-            {t.segments.items.map((item) => {
-              const Icon = item.icon;
-              return <article className="segment-card" data-reveal key={item.title}><Icon size={24} /><h3>{item.title}</h3><p>{item.copy}</p></article>;
-            })}
-          </div>
-        </section>
-
-        <section className="section services-section" id={sectionIds.services}>
-          <div className="section-heading" data-reveal>
-            <div><p className="eyebrow">{t.nav.services}</p><h2>{t.services.title}</h2></div>
-            <p>{t.services.copy}</p>
-          </div>
-          <div className="service-list">
-            {t.services.items.map((item, index) => {
-              const Icon = item.icon;
-              return (
-                <article className="feature-card" data-reveal key={item.title}>
-                  <span className="card-index">{String(index + 1).padStart(2, "0")}</span>
-                  <div className="icon-box"><Icon size={21} /></div>
-                  <h3>{item.title}</h3><p>{item.copy}</p>
-                </article>
-              );
-            })}
-          </div>
-        </section>
-
-        <section className="scope-panel" data-reveal>
-          <div className="scope-copy"><p className="eyebrow">{t.supplyScope.label}</p><h2>{t.supplyScope.title}</h2><p>{t.supplyScope.copy}</p></div>
-          <div className="scope-grid">
-            {t.supplyScope.items.map((item) => <div className="scope-item" key={item}><Check size={17} strokeWidth={3} /><span>{item}</span></div>)}
-          </div>
-        </section>
-
-        <section className="section process-section" id={sectionIds.process}>
-          <div className="section-heading" data-reveal>
-            <div><p className="eyebrow">{t.nav.process}</p><h2>{t.process.title}</h2></div>
+            <SectionTitleBlock title={t.nav.process} subtitle={t.process.title} />
             <p>{t.process.copy}</p>
           </div>
           <div className="process-list">
@@ -219,8 +237,113 @@ export function App() {
           </div>
         </section>
 
+        <section className="section segment-section">
+          <div className="section-heading" data-reveal>
+            <SectionTitleBlock title={t.segments.label} subtitle={t.segments.title} />
+            <p>{t.segments.copy}</p>
+          </div>
+          <div className="segment-grid">
+            {t.segments.items.map((item) => {
+              const Icon = item.icon;
+              return <article className="segment-card" data-reveal key={item.title}><Icon size={24} /><h3>{item.title}</h3><p>{item.copy}</p></article>;
+            })}
+          </div>
+        </section>
+
+        <section className="section services-section" id={sectionIds.services}>
+          <div className="section-heading" data-reveal>
+            <SectionTitleBlock title={t.nav.services} subtitle={t.services.title} />
+            <p>{t.services.copy}</p>
+          </div>
+          <div className="service-list">
+            {t.services.items.map((item, index) => {
+              const Icon = item.icon;
+              const isOpen = openServiceId === item.id;
+              const titleId = `service-${item.id}-title`;
+              const detailId = `service-${item.id}-detail`;
+              return (
+                <article className={`feature-card ${isOpen ? "is-open" : ""}`} key={item.id}>
+                  <div className="service-trigger" data-reveal>
+                    <button
+                      className="service-trigger-hitbox"
+                      type="button"
+                      aria-expanded={isOpen}
+                      aria-controls={detailId}
+                      aria-label={`${item.title}: ${isOpen ? t.services.detailLabels.close : t.services.detailLabels.open}`}
+                      onClick={() => setOpenServiceId(isOpen ? null : item.id)}
+                    />
+                    <span className="card-index">{String(index + 1).padStart(2, "0")}</span>
+                    <div className="icon-box"><Icon size={21} aria-hidden="true" /></div>
+                    <div className="service-card-copy">
+                      <h3 id={titleId}>{item.title}</h3>
+                      <p>{item.copy}</p>
+                      <span className="service-disclosure" aria-hidden="true"><ChevronDown size={18} /></span>
+                    </div>
+                  </div>
+                  {isOpen && (
+                    <div className="service-detail" id={detailId} role="region" aria-labelledby={titleId}>
+                      <div className="service-detail-copy">
+                        <p className="service-detail-kicker">{t.services.detailLabels.file}</p>
+                        <div className="service-detail-columns">
+                          <div>
+                            <h4>{t.services.detailLabels.coverage}</h4>
+                            <ul>
+                              {item.coverage.map((entry) => (
+                                <li key={entry}><Check size={16} aria-hidden="true" />{entry}</li>
+                              ))}
+                            </ul>
+                          </div>
+                          <div>
+                            <h4>{t.services.detailLabels.approach}</h4>
+                            <p>{item.approach}</p>
+                          </div>
+                        </div>
+                        <a className="service-cta" href={`#${sectionIds.contact}`}>
+                          {t.services.detailLabels.cta}<ArrowRight size={17} aria-hidden="true" />
+                        </a>
+                      </div>
+                      <figure className="service-media">
+                        <img src={item.image} alt={item.imageAlt} width="1200" height="900" loading="lazy" />
+                        <figcaption>{t.services.detailLabels.imageCaption}</figcaption>
+                      </figure>
+                    </div>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="references-section" data-reveal>
+          <div className="references-intro">
+            <SectionTitleBlock title={t.references.label} subtitle={t.references.title} />
+            <p className="references-note">{t.references.note}</p>
+          </div>
+          <ul className="reference-ledger">
+            {t.references.items.map((item) => (
+              <li className="reference-mark" key={item.name}>
+                <span className="reference-monogram" aria-hidden="true">{item.mark}</span>
+                <span className="reference-wordmark">{item.name}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section className="scope-panel" data-reveal>
+          <div className="scope-copy">
+            <SectionTitleBlock title={t.supplyScope.label} subtitle={t.supplyScope.title} />
+            <p>{t.supplyScope.copy}</p>
+          </div>
+          <div className="scope-grid">
+            {t.supplyScope.items.map((item) => <div className="scope-item" key={item}><Check size={17} strokeWidth={3} /><span>{item}</span></div>)}
+          </div>
+        </section>
+
         <section className="benefits-band" data-reveal>
-          <div><p className="eyebrow">{t.benefits.title}</p><h2>{language === "tr" ? "Satın alma yükünü azaltan net bir operasyon." : "A clear operation that reduces purchasing workload."}</h2></div>
+          <SectionTitleBlock
+            title={t.benefits.title}
+            subtitle={language === "tr" ? "Satın alma yükünü azaltan net bir operasyon." : "A clear operation that reduces purchasing workload."}
+          />
           <ol className="benefit-list">
             {t.benefits.items.map((item, index) => <li key={item}><span>{String(index + 1).padStart(2, "0")}</span>{item}</li>)}
           </ol>
@@ -228,7 +351,7 @@ export function App() {
 
         <section className="section principles-section" id={sectionIds.principles}>
           <div className="section-heading" data-reveal>
-            <div><p className="eyebrow">{t.nav.principles}</p><h2>{t.principles.title}</h2></div>
+            <SectionTitleBlock title={t.nav.principles} subtitle={t.principles.title} />
             <p>{t.principles.copy}</p>
           </div>
           <div className="principles-grid">
@@ -240,13 +363,16 @@ export function App() {
         </section>
 
         <section className="quote-panel" data-reveal>
-          <div><p className="eyebrow">{t.contact.label}</p><h2>{t.quoteChecklist.title}</h2><p>{t.quoteChecklist.copy}</p></div>
+          <div>
+            <SectionTitleBlock title={t.contact.label} subtitle={t.quoteChecklist.title} />
+            <p>{t.quoteChecklist.copy}</p>
+          </div>
           <ul className="quote-list">{t.quoteChecklist.items.map((item) => <li key={item}><Check size={17} />{item}</li>)}</ul>
         </section>
 
         <section className="section faq-section">
           <div className="section-heading" data-reveal>
-            <div><p className="eyebrow">{t.faq.label}</p><h2>{t.faq.title}</h2></div>
+            <SectionTitleBlock title={t.faq.label} subtitle={t.faq.title !== t.faq.label ? t.faq.title : undefined} />
             <p>{t.faq.copy}</p>
           </div>
           <div className="faq-list">
@@ -256,7 +382,8 @@ export function App() {
 
         <section className="contact-section" data-reveal id={sectionIds.contact}>
           <div className="contact-copy">
-            <p className="eyebrow">{t.contact.label}</p><h2>{t.contact.title}</h2><p>{t.contact.copy}</p>
+            <SectionTitleBlock title={t.contact.label} subtitle={t.contact.title} />
+            <p>{t.contact.copy}</p>
             {t.contact.details.slice(0, 1).map((detail) => {
               const Icon = detail.icon;
               return <a className="contact-detail" href={`mailto:${detail.value}`} key={detail.label}><Icon size={20} /><span>{detail.label}</span><strong>{detail.value}</strong></a>;

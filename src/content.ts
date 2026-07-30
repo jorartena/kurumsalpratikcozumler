@@ -17,6 +17,15 @@ import {
   Truck,
   Zap,
 } from "lucide-react";
+import cleaningHygieneImage from "./assets/services/cleaning-hygiene.webp";
+import constructionMaterialsImage from "./assets/services/construction-materials.webp";
+import electricalSuppliesImage from "./assets/services/electrical-supplies.webp";
+import foodKitchenImage from "./assets/services/food-kitchen.webp";
+import itTechnologyImage from "./assets/services/it-technology.webp";
+import logisticsDeliveryImage from "./assets/services/logistics-delivery.webp";
+import officeStationeryImage from "./assets/services/office-stationery.webp";
+import packagingImage from "./assets/services/packaging.webp";
+import procurementManagementImage from "./assets/services/procurement-management.webp";
 
 export type Language = "tr" | "en";
 
@@ -41,16 +50,10 @@ export const content = {
       primary: "Teklif talep et",
       secondary: "Ürün gruplarını incele",
       stats: [
-        { value: "9", label: "Ana ürün ve hizmet grubu" },
-        { value: "Planlı", label: "Teslimat ve takip akışı" },
-        { value: "Tek", label: "Muhatapla tedarik yönetimi" },
+        { target: 9, label: "Ana ürün ve hizmet grubu" },
+        { target: 40, suffix: "+", label: "Hizmet verilen kurum" },
+        { target: 250, suffix: "+", label: "Tamamlanan tedarik çözümü" },
       ],
-    },
-    intro: {
-      label: "Tedarikte pratik çözüm",
-      title: "Talebinizden teslimata kadar süreci sizin adınıza sadeleştiririz.",
-      copy:
-        "Kurumsal ihtiyaçlar çoğu zaman farklı tedarikçiler, değişken fiyatlar ve takip edilmesi gereken teslimatlarla dağınık hale gelir. Biz bu süreci tek merkezden yönetilebilir, şeffaf ve zamanında ilerleyen bir tedarik akışına dönüştürürüz.",
     },
     segments: {
       label: "Kurum tipleri",
@@ -74,55 +77,158 @@ export const content = {
         },
       ],
     },
+    references: {
+      label: "Referanslarımız",
+      title: "Farklı sektörlerde güvene dayalı tedarik ilişkileri.",
+      note: "Gösterimdeki marka adları ve logolar örnek yer tutuculardır.",
+      items: [
+        { mark: "AE", name: "Arvena Endüstri" },
+        { mark: "KY", name: "Kenterra Yapı" },
+        { mark: "VT", name: "Velora Tesis" },
+        { mark: "PA", name: "Paketra Ambalaj" },
+        { mark: "RG", name: "Rota Gıda" },
+        { mark: "DO", name: "Denge Ofis" },
+      ],
+    },
     services: {
       title: "Ürün ve hizmet grupları",
       copy:
         "Günlük sarf ihtiyaçlarından inşaat, elektrik ve bilişim ürünlerine kadar düzenli ve proje bazlı talepler için güvenilir tedarik desteği sağlanır.",
+      detailLabels: {
+        open: "Detayı gör",
+        close: "Detayı kapat",
+        file: "Hizmet dosyası",
+        coverage: "Kapsama örnekleri",
+        approach: "Nasıl destek oluyoruz?",
+        cta: "Bu hizmet için teklif iste",
+        imageCaption: "Temsili operasyon görseli",
+      },
       items: [
         {
+          id: "procurement-management",
           icon: ClipboardCheck,
           title: "Kurumsal tedarik yönetimi",
           copy: "Kamu ve özel sektör kurumlarının çok kalemli ürün ihtiyaçları planlı, belgeli ve takip edilebilir şekilde yönetilir.",
+          image: procurementManagementImage,
+          imageAlt: "Depoda ürün ve stok planlamasını tablet üzerinden değerlendiren iki çalışan",
+          coverage: [
+            "Çok kalemli ihtiyaç listelerinin tek talepte birleştirilmesi",
+            "Ürün, marka ve teknik özellik alternatiflerinin karşılaştırılması",
+            "Teklif, onay ve teslimat adımlarının kayıtlı takibi",
+          ],
+          approach: "Talep listenizi kategori, miktar ve teslimat önceliğine göre düzenler; uygun tedarik seçeneklerini tek teklif akışında karşılaştırılabilir biçimde sunarız.",
         },
         {
+          id: "logistics-delivery",
           icon: Truck,
           title: "Lojistik ve teslimat hizmetleri",
           copy: "Onaylanan siparişler için teslimat planı oluşturulur; ürünlerin zamanında ve eksiksiz ulaşması takip edilir.",
+          image: logisticsDeliveryImage,
+          imageAlt: "Depo rafları arasında kutu taşıyan iki lojistik çalışanı",
+          coverage: [
+            "Siparişlerin teslimat noktası ve takvime göre gruplanması",
+            "Parçalı veya toplu sevkiyat seçeneklerinin planlanması",
+            "Teslim öncesi durum ve eksik kalem kontrolü",
+          ],
+          approach: "Onaylanan ürünleri çıkış ve teslimat planına bağlar; sevkiyat durumunu tek noktadan izleyerek kurumunuza düzenli bilgi veririz.",
         },
         {
+          id: "cleaning-hygiene",
           icon: ShieldCheck,
           title: "Temizlik ve hijyen ürünleri",
           copy: "Kurumsal alanlarda kullanılan temizlik, hijyen, sarf ve bakım ürünleri için toptan tedarik desteği sunulur.",
+          image: cleaningHygieneImage,
+          imageAlt: "Sarı koruyucu eldivenlerle tutulan temizlik spreyi ve sünger",
+          coverage: [
+            "Genel alan, mutfak ve yüzey temizlik kimyasalları",
+            "Kâğıt ürünleri, çöp torbaları ve hijyen sarfları",
+            "Eldiven, bez, sünger ve profesyonel temizlik ekipmanları",
+          ],
+          approach: "Kullanım alanı, tüketim sıklığı ve ambalaj hacmine göre ürünleri eşleştirir; düzenli tüketilen kalemler için ekonomik toplu alım seçenekleri oluştururuz.",
         },
         {
+          id: "food-kitchen",
           icon: ShoppingBasket,
           title: "Gıda ve mutfak sarf ürünleri",
           copy: "Kurum mutfakları, yemekhaneler, etkinlikler ve operasyonel tüketimler için gıda ve ikram ürünleri temin edilir.",
+          image: foodKitchenImage,
+          imageAlt: "Profesyonel bir mutfakta hazırlık yapan aşçı ve mutfak ekipmanları",
+          coverage: [
+            "Kuru gıda, içecek ve toplu tüketim ürünleri",
+            "Tek kullanımlık servis ve ikram malzemeleri",
+            "Mutfak hazırlık, saklama ve günlük tüketim sarfları",
+          ],
+          approach: "Tüketim miktarı, teslim sıklığı ve saklama koşullarını dikkate alarak mutfak operasyonunu aksatmayacak ürün ve teslimat planı hazırlarız.",
         },
         {
+          id: "packaging",
           icon: PackageCheck,
           title: "Ambalaj ve paketleme çözümleri",
           copy: "Koli, poşet, streç, bant ve paketleme sarflarında ticari ve endüstriyel kullanıma uygun seçenekler sunulur.",
+          image: packagingImage,
+          imageAlt: "Bir koliyi bant makinesiyle kapatan paketleme çalışanının elleri",
+          coverage: [
+            "Koli, kutu ve ürüne uygun koruyucu ambalajlar",
+            "Streç film, bant, poşet ve dolgu malzemeleri",
+            "Sevkiyat, depolama ve etiketleme sarfları",
+          ],
+          approach: "Paketlenecek ürünün ölçüsü, ağırlığı ve sevkiyat koşullarına göre doğru malzeme kombinasyonunu belirler; gereksiz sarf kullanımını azaltacak alternatifler sunarız.",
         },
         {
+          id: "office-stationery",
           icon: Boxes,
           title: "Ofis ve kırtasiye ürünleri",
           copy: "Ofislerin düzenli ihtiyaç duyduğu kırtasiye, yazıcı sarf, büro malzemeleri ve destek ürünleri ekonomik şekilde tedarik edilir.",
+          image: officeStationeryImage,
+          imageAlt: "Masa üzerinde düzenlenmiş defter, kalem, cetvel ve ofis sarf malzemeleri",
+          coverage: [
+            "Kâğıt, dosyalama ve masaüstü kırtasiye ürünleri",
+            "Yazıcı tonerleri, kartuşlar ve baskı sarfları",
+            "Arşivleme, toplantı ve günlük ofis destek ürünleri",
+          ],
+          approach: "Departmanların tekrar eden ihtiyaçlarını ortak listede toplar; uyumlu sarf ürünlerini ve ekonomik muadilleri teslimat periyoduna göre planlarız.",
         },
         {
+          id: "construction-materials",
           icon: Building2,
           title: "İnşaat ve yapı malzemeleri",
           copy: "Tadilat, bakım ve proje ihtiyaçları için yapı malzemeleri, hırdavat, boya, yalıtım ve tamamlayıcı ürünlerin tedariği koordine edilir.",
+          image: constructionMaterialsImage,
+          imageAlt: "Tadilat alanında yapı malzemeleri, boya kovaları ve uygulama ekipmanları",
+          coverage: [
+            "Hırdavat, bağlantı elemanları ve el aletleri",
+            "Boya, yalıtım ve yüzey uygulama malzemeleri",
+            "Bakım, tadilat ve proje bazlı tamamlayıcı ürünler",
+          ],
+          approach: "Malzeme listesini uygulama alanı ve teknik şartlara göre netleştirir; farklı kalemlerin proje takvimine uygun biçimde birlikte sevk edilmesini koordine ederiz.",
         },
         {
+          id: "electrical-supplies",
           icon: Zap,
           title: "Elektrik malzemeleri",
           copy: "Kablo, aydınlatma, pano ekipmanları, anahtar-priz grupları ve tesisat sarfları proje şartlarına uygun seçeneklerle temin edilir.",
+          image: electricalSuppliesImage,
+          imageAlt: "Elektrik panosundaki bağlantıları ölçüm cihazıyla kontrol eden teknisyen",
+          coverage: [
+            "Kablo, kanal, bağlantı ve tesisat sarfları",
+            "Aydınlatma, anahtar, priz ve kontrol ekipmanları",
+            "Pano bileşenleri ve proje bazlı elektrik malzemeleri",
+          ],
+          approach: "Teknik liste, kullanım ortamı ve proje standardına göre uyumlu ürünleri araştırır; onay öncesinde alternatiflerin temel özelliklerini karşılaştırırız.",
         },
         {
+          id: "it-technology",
           icon: MonitorCog,
           title: "Bilişim ve teknoloji ürünleri",
           copy: "Bilgisayar, çevre birimleri, ağ ekipmanları, yazıcı ve kurumsal teknoloji ihtiyaçları için ürün araştırması ve tedarik desteği sunulur.",
+          image: itTechnologyImage,
+          imageAlt: "Veri merkezindeki ağ cihazlarına bağlı düzenli veri kabloları",
+          coverage: [
+            "Bilgisayar, monitör ve kullanıcı çevre birimleri",
+            "Ağ cihazları, kablolama ve bağlantı ekipmanları",
+            "Yazıcı, depolama ve kurumsal teknoloji sarfları",
+          ],
+          approach: "Kullanım senaryosu, bağlantı uyumluluğu ve bütçe aralığını netleştirir; kurum standardına uygun güncel ürün seçeneklerini karşılaştırmalı olarak sunarız.",
         },
       ],
     },
@@ -273,16 +379,10 @@ export const content = {
       primary: "Request a quote",
       secondary: "Explore product groups",
       stats: [
-        { value: "9", label: "Main product and service groups" },
-        { value: "Planned", label: "Delivery and tracking flow" },
-        { value: "One", label: "Contact for supply management" },
+        { target: 9, label: "Main product and service groups" },
+        { target: 40, suffix: "+", label: "Organizations served" },
+        { target: 250, suffix: "+", label: "Completed supply solutions" },
       ],
-    },
-    intro: {
-      label: "Practical procurement support",
-      title: "We simplify the flow from request to delivery on your behalf.",
-      copy:
-        "Institutional needs often become scattered across multiple suppliers, changing prices, and delivery follow-ups. We turn that process into a centralized, transparent, and timely supply flow.",
     },
     segments: {
       label: "Institution types",
@@ -306,55 +406,158 @@ export const content = {
         },
       ],
     },
+    references: {
+      label: "References",
+      title: "Trusted supply relationships across different sectors.",
+      note: "The brand names and logos shown are sample placeholders.",
+      items: [
+        { mark: "AE", name: "Arvena Endüstri" },
+        { mark: "KY", name: "Kenterra Yapı" },
+        { mark: "VT", name: "Velora Tesis" },
+        { mark: "PA", name: "Paketra Ambalaj" },
+        { mark: "RG", name: "Rota Gıda" },
+        { mark: "DO", name: "Denge Ofis" },
+      ],
+    },
     services: {
       title: "Product and service groups",
       copy:
         "From daily consumables to construction, electrical, and IT products, we provide reliable sourcing support for regular and project-based institutional needs.",
+      detailLabels: {
+        open: "View details",
+        close: "Close details",
+        file: "Service file",
+        coverage: "Example coverage",
+        approach: "How we support you",
+        cta: "Request a quote for this service",
+        imageCaption: "Representative operations image",
+      },
       items: [
         {
+          id: "procurement-management",
           icon: ClipboardCheck,
           title: "Institutional supply management",
           copy: "Multi-item product needs of public and private sector organizations are managed in a planned, documented, and trackable way.",
+          image: procurementManagementImage,
+          imageAlt: "Two warehouse employees reviewing product and inventory planning on a tablet",
+          coverage: [
+            "Consolidating multi-item requirement lists into one request",
+            "Comparing product, brand, and technical specification alternatives",
+            "Documented tracking of quotation, approval, and delivery steps",
+          ],
+          approach: "We organize your request by category, quantity, and delivery priority, then present suitable sourcing options in one clear and comparable quotation flow.",
         },
         {
+          id: "logistics-delivery",
           icon: Truck,
           title: "Logistics and delivery services",
           copy: "A delivery plan is created for approved orders, and timely, complete delivery is followed through.",
+          image: logisticsDeliveryImage,
+          imageAlt: "Two logistics employees carrying boxes through warehouse aisles",
+          coverage: [
+            "Grouping orders by delivery point and schedule",
+            "Planning consolidated or partial shipment options",
+            "Pre-delivery status and missing-item checks",
+          ],
+          approach: "We connect approved products to a dispatch and delivery plan, monitor shipment status from one point, and keep your organization regularly informed.",
         },
         {
+          id: "cleaning-hygiene",
           icon: ShieldCheck,
           title: "Cleaning and hygiene products",
           copy: "Wholesale sourcing support is provided for cleaning, hygiene, consumable, and maintenance products used in institutional spaces.",
+          image: cleaningHygieneImage,
+          imageAlt: "Cleaning spray and sponge held with yellow protective gloves",
+          coverage: [
+            "General-area, kitchen, and surface cleaning chemicals",
+            "Paper products, waste bags, and hygiene consumables",
+            "Gloves, cloths, sponges, and professional cleaning tools",
+          ],
+          approach: "We match products to the area of use, consumption frequency, and pack size, then create economical bulk-purchase options for regularly used items.",
         },
         {
+          id: "food-kitchen",
           icon: ShoppingBasket,
           title: "Food and kitchen consumables",
           copy: "Food, beverage, catering, and kitchen consumables are sourced for institutional kitchens, cafeterias, events, and operations.",
+          image: foodKitchenImage,
+          imageAlt: "Chef preparing food among equipment in a professional kitchen",
+          coverage: [
+            "Dry food, beverages, and bulk-consumption products",
+            "Disposable service and catering supplies",
+            "Kitchen preparation, storage, and daily-use consumables",
+          ],
+          approach: "We consider consumption volume, delivery frequency, and storage conditions to prepare a product and delivery plan that keeps kitchen operations running.",
         },
         {
+          id: "packaging",
           icon: PackageCheck,
           title: "Packaging solutions",
           copy: "Boxes, bags, stretch film, tape, and packaging consumables are supplied for commercial and industrial use cases.",
+          image: packagingImage,
+          imageAlt: "Packaging worker sealing a cardboard box with a tape dispenser",
+          coverage: [
+            "Cartons, boxes, and product-specific protective packaging",
+            "Stretch film, tape, bags, and void-fill materials",
+            "Shipping, storage, and labeling consumables",
+          ],
+          approach: "We identify the right material combination for product dimensions, weight, and shipping conditions, with alternatives that help reduce unnecessary consumption.",
         },
         {
+          id: "office-stationery",
           icon: Boxes,
           title: "Office and stationery products",
           copy: "Stationery, printer consumables, office materials, and support products are sourced economically for regular office needs.",
+          image: officeStationeryImage,
+          imageAlt: "Notebooks, pens, ruler, and office consumables arranged on a desk",
+          coverage: [
+            "Paper, filing, and desktop stationery products",
+            "Printer toners, cartridges, and printing consumables",
+            "Archiving, meeting, and daily office support items",
+          ],
+          approach: "We consolidate recurring departmental needs, then plan compatible consumables and economical alternatives according to the preferred delivery cycle.",
         },
         {
+          id: "construction-materials",
           icon: Building2,
           title: "Construction and building materials",
           copy: "Building materials, hardware, paint, insulation, and complementary products are coordinated for renovation, maintenance, and project needs.",
+          image: constructionMaterialsImage,
+          imageAlt: "Building materials, paint containers, and application equipment at a renovation site",
+          coverage: [
+            "Hardware, fasteners, and hand tools",
+            "Paint, insulation, and surface-application materials",
+            "Complementary products for maintenance, renovation, and projects",
+          ],
+          approach: "We clarify the material list against application and technical requirements, then coordinate combined delivery of different items in line with the project schedule.",
         },
         {
+          id: "electrical-supplies",
           icon: Zap,
           title: "Electrical supplies",
           copy: "Cables, lighting, panel equipment, switches, sockets, and installation consumables are sourced to match project requirements.",
+          image: electricalSuppliesImage,
+          imageAlt: "Technician testing connections inside an electrical panel with a multimeter",
+          coverage: [
+            "Cable, conduit, connection, and installation consumables",
+            "Lighting, switches, sockets, and control equipment",
+            "Panel components and project-based electrical materials",
+          ],
+          approach: "We research compatible products according to the technical list, operating environment, and project standard, then compare key alternatives before approval.",
         },
         {
+          id: "it-technology",
           icon: MonitorCog,
           title: "IT and technology products",
           copy: "Product research and sourcing support is provided for computers, peripherals, network equipment, printers, and institutional technology needs.",
+          image: itTechnologyImage,
+          imageAlt: "Organized data cables connected to network equipment in a data center",
+          coverage: [
+            "Computers, monitors, and user peripherals",
+            "Network devices, cabling, and connectivity equipment",
+            "Printers, storage, and institutional technology consumables",
+          ],
+          approach: "We clarify the use case, connection compatibility, and budget range, then present current product options that align with your organization’s standards.",
         },
       ],
     },
