@@ -52,13 +52,14 @@ for (const language of ["tr", "en"]) {
         overflow: root.scrollWidth - root.clientWidth,
         hiddenReveals,
         clippedText,
-        images: document.images.length,
+        heroImages: document.querySelectorAll(".hero-media img").length,
+        logos: document.querySelectorAll(".brand-logo").length,
         h1: document.querySelectorAll("h1").length,
         h2: document.querySelectorAll("h2").length,
       };
     });
 
-    if (result.overflow > 1 || result.hiddenReveals || result.clippedText.length || result.images !== 1 || result.h1 !== 1) {
+    if (result.overflow > 1 || result.hiddenReveals || result.clippedText.length || result.heroImages !== 1 || result.logos !== 2 || result.h1 !== 1) {
       issues.push({ language, width, ...result });
     }
 

@@ -1,18 +1,21 @@
 import {
   BarChart3,
   Boxes,
+  Building2,
   CheckCircle2,
   ClipboardCheck,
   FileSearch,
   Handshake,
   Mail,
   MapPinned,
+  MonitorCog,
   Network,
   PackageCheck,
   ShieldCheck,
   ShoppingBasket,
   Target,
   Truck,
+  Zap,
 } from "lucide-react";
 
 export type Language = "tr" | "en";
@@ -38,7 +41,7 @@ export const content = {
       primary: "Teklif talep et",
       secondary: "Ürün gruplarını incele",
       stats: [
-        { value: "6", label: "Ana ürün ve hizmet grubu" },
+        { value: "9", label: "Ana ürün ve hizmet grubu" },
         { value: "Planlı", label: "Teslimat ve takip akışı" },
         { value: "Tek", label: "Muhatapla tedarik yönetimi" },
       ],
@@ -74,7 +77,7 @@ export const content = {
     services: {
       title: "Ürün ve hizmet grupları",
       copy:
-        "Temizlikten ofis sarfına, gıdadan ambalaja kadar kurumların düzenli ve proje bazlı ihtiyaçları için hızlı teklif ve güvenilir tedarik desteği sağlanır.",
+        "Günlük sarf ihtiyaçlarından inşaat, elektrik ve bilişim ürünlerine kadar düzenli ve proje bazlı talepler için güvenilir tedarik desteği sağlanır.",
       items: [
         {
           icon: ClipboardCheck,
@@ -106,6 +109,21 @@ export const content = {
           title: "Ofis ve kırtasiye ürünleri",
           copy: "Ofislerin düzenli ihtiyaç duyduğu kırtasiye, yazıcı sarf, büro malzemeleri ve destek ürünleri ekonomik şekilde tedarik edilir.",
         },
+        {
+          icon: Building2,
+          title: "İnşaat ve yapı malzemeleri",
+          copy: "Tadilat, bakım ve proje ihtiyaçları için yapı malzemeleri, hırdavat, boya, yalıtım ve tamamlayıcı ürünlerin tedariği koordine edilir.",
+        },
+        {
+          icon: Zap,
+          title: "Elektrik malzemeleri",
+          copy: "Kablo, aydınlatma, pano ekipmanları, anahtar-priz grupları ve tesisat sarfları proje şartlarına uygun seçeneklerle temin edilir.",
+        },
+        {
+          icon: MonitorCog,
+          title: "Bilişim ve teknoloji ürünleri",
+          copy: "Bilgisayar, çevre birimleri, ağ ekipmanları, yazıcı ve kurumsal teknoloji ihtiyaçları için ürün araştırması ve tedarik desteği sunulur.",
+        },
       ],
     },
     supplyScope: {
@@ -118,6 +136,9 @@ export const content = {
         "Koli, poşet, streç, bant ve paketleme ürünleri",
         "Kırtasiye, yazıcı sarfı ve ofis destek ürünleri",
         "Endüstriyel sarf, bakım ve tesis destek ürünleri",
+        "İnşaat, hırdavat, boya, yalıtım ve yapı malzemeleri",
+        "Elektrik tesisatı, aydınlatma, kablo ve pano ekipmanları",
+        "Bilgisayar, çevre birimleri, ağ ve bilişim ürünleri",
         "Proje bazlı özel ürün araştırması ve alternatif tedarik",
       ],
     },
@@ -252,7 +273,7 @@ export const content = {
       primary: "Request a quote",
       secondary: "Explore product groups",
       stats: [
-        { value: "6", label: "Main product and service groups" },
+        { value: "9", label: "Main product and service groups" },
         { value: "Planned", label: "Delivery and tracking flow" },
         { value: "One", label: "Contact for supply management" },
       ],
@@ -288,7 +309,7 @@ export const content = {
     services: {
       title: "Product and service groups",
       copy:
-        "From cleaning to office supplies, from food to packaging, we provide fast quotation and reliable sourcing support for regular and project-based institutional needs.",
+        "From daily consumables to construction, electrical, and IT products, we provide reliable sourcing support for regular and project-based institutional needs.",
       items: [
         {
           icon: ClipboardCheck,
@@ -320,6 +341,21 @@ export const content = {
           title: "Office and stationery products",
           copy: "Stationery, printer consumables, office materials, and support products are sourced economically for regular office needs.",
         },
+        {
+          icon: Building2,
+          title: "Construction and building materials",
+          copy: "Building materials, hardware, paint, insulation, and complementary products are coordinated for renovation, maintenance, and project needs.",
+        },
+        {
+          icon: Zap,
+          title: "Electrical supplies",
+          copy: "Cables, lighting, panel equipment, switches, sockets, and installation consumables are sourced to match project requirements.",
+        },
+        {
+          icon: MonitorCog,
+          title: "IT and technology products",
+          copy: "Product research and sourcing support is provided for computers, peripherals, network equipment, printers, and institutional technology needs.",
+        },
       ],
     },
     supplyScope: {
@@ -332,6 +368,9 @@ export const content = {
         "Boxes, bags, stretch film, tape, and packaging products",
         "Stationery, printer consumables, and office support products",
         "Industrial consumables, maintenance, and facility support products",
+        "Construction materials, hardware, paint, and insulation products",
+        "Electrical installation, lighting, cable, and panel equipment",
+        "Computers, peripherals, network, and IT products",
         "Project-based product research and alternative sourcing",
       ],
     },

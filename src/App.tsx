@@ -1,6 +1,7 @@
 import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { ArrowRight, Check, Globe2, Menu, X } from "lucide-react";
 import heroImage from "./assets/procurement-hero.png";
+import logo from "./assets/logo.svg";
 import { content, languages, type Language } from "./content";
 
 const sectionIds = {
@@ -85,11 +86,7 @@ export function App() {
     <div className="site-shell theme-flow">
       <header className={`site-header ${isScrolled ? "is-scrolled" : ""}`}>
         <a className="brand" href="#top" aria-label="Optimal Kurumsal Çözümler">
-          <span className="brand-mark" aria-hidden="true">O</span>
-          <span>
-            <strong>Optimal</strong>
-            <small>Kurumsal Çözümler</small>
-          </span>
+          <img className="brand-logo" src={logo} alt="" />
         </a>
 
         <button
@@ -281,7 +278,9 @@ export function App() {
       </main>
 
       <footer className="site-footer">
-        <div className="brand footer-brand"><span className="brand-mark" aria-hidden="true">O</span><span><strong>Optimal</strong><small>Kurumsal Çözümler</small></span></div>
+        <a className="brand footer-brand" href="#top" aria-label="Optimal Kurumsal Çözümler">
+          <img className="brand-logo" src={logo} alt="" />
+        </a>
         <p>{t.footer.copy}</p>
         <span>© {year} Optimal Kurumsal Çözümler. {t.footer.rights}</span>
       </footer>
