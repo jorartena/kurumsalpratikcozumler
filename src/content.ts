@@ -359,6 +359,13 @@ export const content = {
         { icon: Mail, label: "E-posta", value: "info@optimalcozumler.com" },
       ],
     },
+    location: {
+      label: "Ofis konumu",
+      title: "Bizi ziyaret edin",
+      address: "Y Ofis, Merkez Mah., Kağıthane Cd. No:7, 34406 Kağıthane / İstanbul",
+      directions: "Yol tarifi al",
+      mapTitle: "Y Ofis konumunu gösteren Google Maps haritası",
+    },
     footer: {
       copy: "Kamu ve özel kurumlar için pratik, ekonomik ve takip edilebilir tedarik çözümleri.",
       rights: "Tüm hakları saklıdır.",
@@ -687,6 +694,13 @@ export const content = {
       details: [
         { icon: Mail, label: "Email", value: "info@optimalcozumler.com" },
       ],
+    },
+    location: {
+      label: "Office location",
+      title: "Visit our office",
+      address: "Y Ofis, Merkez Quarter, Kağıthane Avenue No:7, 34406 Kağıthane / Istanbul",
+      directions: "Get directions",
+      mapTitle: "Google Maps showing the Y Ofis location",
     },
     footer: {
       copy: "Practical, economical, and trackable supply solutions for public and private institutions.",

@@ -1,5 +1,5 @@
 import { type FormEvent, useEffect, useMemo, useState } from "react";
-import { ArrowRight, Check, ChevronDown, Globe2, Menu, X } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Check, ChevronDown, Globe2, MapPinned, Menu, X } from "lucide-react";
 import heroImage from "./assets/procurement-hero.png";
 import logo from "./assets/logo.svg";
 import { content, languages, type Language } from "./content";
@@ -401,6 +401,33 @@ export function App() {
                 : (language === "tr" ? "Bu form şu an önizleme modundadır; bilgi göndermez." : "This form is in preview mode and does not send data.")}
             </p>
           </form>
+        </section>
+
+        <section className="location-section" data-reveal aria-labelledby="location-title">
+          <div className="location-map">
+            <iframe
+              title={t.location.mapTitle}
+              src="https://www.google.com/maps?q=Y%20Ofis%2C%20Merkez%2C%20Ka%C4%9F%C4%B1thane%20Cd.%20No%3A7%2C%2034406%20Ka%C4%9F%C4%B1thane%2F%C4%B0stanbul&output=embed"
+              loading="lazy"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+            />
+          </div>
+          <div className="location-card">
+            <span className="location-kicker"><MapPinned size={18} aria-hidden="true" />{t.location.label}</span>
+            <div>
+              <h2 id="location-title">{t.location.title}</h2>
+              <address>{t.location.address}</address>
+            </div>
+            <a
+              className="location-directions"
+              href="https://maps.app.goo.gl/VXkYL7VdomXeiivE8"
+              target="_blank"
+              rel="noreferrer"
+            >
+              {t.location.directions}<ArrowUpRight size={18} aria-hidden="true" />
+            </a>
+          </div>
         </section>
       </main>
 
