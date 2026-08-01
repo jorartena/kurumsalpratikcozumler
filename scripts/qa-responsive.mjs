@@ -62,8 +62,40 @@ for (const language of ["tr", "en"]) {
         processSections: document.querySelectorAll("#process.process-section").length,
         introBands: document.querySelectorAll(".intro-band").length,
         referenceMarks: document.querySelectorAll(".reference-mark").length,
+        referenceImages: document.querySelectorAll(".reference-mark img").length,
+        accessibleReferenceMarks: document.querySelectorAll('.reference-group:not([aria-hidden="true"]) .reference-mark').length,
+        filledReferenceAlts: document.querySelectorAll('.reference-group:not([aria-hidden="true"]) img[alt]:not([alt=""])').length,
+        decorativeReferenceAlts: document.querySelectorAll('.reference-group[aria-hidden="true"] img[alt=""]').length,
+        referenceImagesReady: [...document.querySelectorAll(".reference-mark img")].every(
+          (image) => image.complete && image.naturalWidth > 0,
+        ),
         referenceLinks: document.querySelectorAll(".references-section a, .references-section button").length,
         referenceNotes: document.querySelectorAll(".references-note").length,
+        navLinks: document.querySelectorAll(".site-nav a").length,
+        navOrder: [...document.querySelectorAll(".site-nav a")].map((link) => link.getAttribute("href")),
+        referencesNavLinks: document.querySelectorAll('.site-nav a[href="#references"]').length,
+        referenceIntroFirst: (() => {
+          const section = document.querySelector(".references-section");
+          const intro = document.querySelector(".references-intro");
+          const marquee = document.querySelector(".reference-marquee");
+          return Boolean(
+            section
+            && intro
+            && marquee
+            && section.firstElementChild === intro
+            && intro.compareDocumentPosition(marquee) & Node.DOCUMENT_POSITION_FOLLOWING
+          );
+        })(),
+        referenceLayout: (() => {
+          const groups = [...document.querySelectorAll(".reference-group")];
+          const track = document.querySelector(".reference-track");
+          if (groups.length !== 2 || !track) return false;
+          const widths = groups.map((group) => group.getBoundingClientRect().width);
+          const animation = getComputedStyle(track);
+          return Math.abs(widths[0] - widths[1]) <= 1
+            && animation.animationIterationCount === "infinite"
+            && animation.animationTimingFunction === "linear";
+        })(),
         supplyStrips: document.querySelectorAll(".supply-strip").length,
         sectionOrder: (() => {
           const services = document.querySelector(".services-section");
@@ -111,9 +143,19 @@ for (const language of ["tr", "en"]) {
       || result.h1 !== 1
       || result.processSections !== 1
       || result.introBands !== 0
-      || result.referenceMarks !== 6
+      || result.referenceMarks !== 14
+      || result.referenceImages !== 14
+      || result.accessibleReferenceMarks !== 7
+      || result.filledReferenceAlts !== 7
+      || result.decorativeReferenceAlts !== 7
+      || !result.referenceImagesReady
       || result.referenceLinks !== 0
-      || result.referenceNotes !== 1
+      || result.referenceNotes !== 0
+      || result.navLinks !== 5
+      || result.navOrder.join("|") !== "#process|#services|#references|#principles|#contact"
+      || result.referencesNavLinks !== 1
+      || !result.referenceIntroFirst
+      || !result.referenceLayout
       || result.supplyStrips !== 0
       || !result.sectionOrder
       || result.heroStatValues.join("|") !== "9|40+|250+"
@@ -136,6 +178,7 @@ for (const language of ["tr", "en"]) {
       await page.locator(".site-header").evaluate((header) => { header.style.visibility = ""; });
       await page.evaluate(() => window.scrollTo(0, 0));
       await page.screenshot({ path: `qa-screenshots/flow-${width}-${language}.png`, fullPage: true });
+      await page.locator(".references-section").screenshot({ path: `qa-screenshots/references-${width}-${language}.png` });
     }
   }
 }
@@ -144,6 +187,12 @@ await page.setViewportSize({ width: 390, height: 844 });
 await page.goto("http://127.0.0.1:4177", { waitUntil: "networkidle" });
 await page.getByRole("button", { name: "Menüyü aç" }).click();
 const mobileMenuVisible = await page.locator(".header-actions").isVisible();
+await page.locator('.site-nav a[href="#references"]').click();
+const referencesNavClosesMenu = (
+  !(await page.locator(".header-actions").isVisible())
+  && new URL(page.url()).hash === "#references"
+);
+await page.getByRole("button", { name: "Menüyü aç" }).click();
 await page.keyboard.press("Escape");
 const mobileMenuClosed = !(await page.locator(".header-actions").isVisible());
 
@@ -216,11 +265,28 @@ const reducedMotionVisible = await page.evaluate(
 );
 const reducedMotionCounterValues = await page.locator(".hero-stats strong").allTextContents();
 const reducedMotionCountersFinal = reducedMotionCounterValues.join("|") === "9|40+|250+";
+const reducedMotionReferences = await page.evaluate(() => {
+  const track = document.querySelector(".reference-track");
+  const primary = document.querySelector('.reference-group:not([aria-hidden="true"])');
+  const duplicate = document.querySelector('.reference-group[aria-hidden="true"]');
+  const intro = document.querySelector(".references-intro");
+  const marquee = document.querySelector(".reference-marquee");
+  if (!track || !primary || !duplicate || !intro || !marquee) return false;
+  const visibleMarks = [...primary.querySelectorAll(".reference-mark")].filter((mark) => {
+    const box = mark.getBoundingClientRect();
+    return box.width > 0 && box.height > 0;
+  });
+  return getComputedStyle(track).animationName === "none"
+    && getComputedStyle(duplicate).display === "none"
+    && intro.getBoundingClientRect().bottom <= marquee.getBoundingClientRect().top
+    && visibleMarks.length === 7;
+});
 
 console.log(JSON.stringify({
   issues,
   interactions: {
     mobileMenuVisible,
+    referencesNavClosesMenu,
     mobileMenuClosed,
     faqOpen,
     invalidBlocked,
@@ -234,6 +300,7 @@ console.log(JSON.stringify({
     countersPersistAcrossLanguage,
     reducedMotionVisible,
     reducedMotionCountersFinal,
+    reducedMotionReferences,
   },
   consoleErrors: [...new Set(consoleErrors)],
   failedRequests: [...new Set(failedRequests)],

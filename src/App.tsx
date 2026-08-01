@@ -6,6 +6,7 @@ import { content, languages, type Language } from "./content";
 
 const sectionIds = {
   services: "services",
+  references: "references",
   process: "process",
   principles: "principles",
   contact: "contact",
@@ -166,8 +167,9 @@ export function App() {
 
         <div className={`header-actions ${menuOpen ? "is-open" : ""}`} id="header-actions">
           <nav className="site-nav" aria-label={language === "tr" ? "Ana navigasyon" : "Main navigation"}>
-            <a href={`#${sectionIds.services}`} onClick={() => setMenuOpen(false)}>{t.nav.services}</a>
             <a href={`#${sectionIds.process}`} onClick={() => setMenuOpen(false)}>{t.nav.process}</a>
+            <a href={`#${sectionIds.services}`} onClick={() => setMenuOpen(false)}>{t.nav.services}</a>
+            <a href={`#${sectionIds.references}`} onClick={() => setMenuOpen(false)}>{t.nav.references}</a>
             <a href={`#${sectionIds.principles}`} onClick={() => setMenuOpen(false)}>{t.nav.principles}</a>
             <a href={`#${sectionIds.contact}`} onClick={() => setMenuOpen(false)}>{t.nav.contact}</a>
           </nav>
@@ -314,19 +316,30 @@ export function App() {
           </div>
         </section>
 
-        <section className="references-section" data-reveal>
+        <section className="references-section" data-reveal id={sectionIds.references}>
           <div className="references-intro">
             <SectionTitleBlock title={t.references.label} subtitle={t.references.title} />
-            <p className="references-note">{t.references.note}</p>
           </div>
-          <ul className="reference-ledger">
-            {t.references.items.map((item) => (
-              <li className="reference-mark" key={item.name}>
-                <span className="reference-monogram" aria-hidden="true">{item.mark}</span>
-                <span className="reference-wordmark">{item.name}</span>
-              </li>
-            ))}
-          </ul>
+          <div className="reference-marquee">
+            <div className="reference-track">
+              {[false, true].map((isDuplicate) => (
+                <ul
+                  className="reference-group"
+                  key={isDuplicate ? "duplicate" : "primary"}
+                  aria-hidden={isDuplicate || undefined}
+                >
+                  {t.references.items.map((item) => (
+                    <li className={`reference-mark ${item.scaleClass}`} key={item.name}>
+                      <span className="reference-logo-plate">
+                        <img src={item.logo} alt={isDuplicate ? "" : item.alt} loading="eager" />
+                      </span>
+                      <span className="reference-wordmark">{item.name}</span>
+                    </li>
+                  ))}
+                </ul>
+              ))}
+            </div>
+          </div>
         </section>
 
         <section className="scope-panel" data-reveal>
@@ -360,14 +373,6 @@ export function App() {
               return <article className="principle-card" data-reveal key={item.title}><Icon size={24} /><h3>{item.title}</h3><p>{item.copy}</p></article>;
             })}
           </div>
-        </section>
-
-        <section className="quote-panel" data-reveal>
-          <div>
-            <SectionTitleBlock title={t.contact.label} subtitle={t.quoteChecklist.title} />
-            <p>{t.quoteChecklist.copy}</p>
-          </div>
-          <ul className="quote-list">{t.quoteChecklist.items.map((item) => <li key={item}><Check size={17} />{item}</li>)}</ul>
         </section>
 
         <section className="section faq-section">

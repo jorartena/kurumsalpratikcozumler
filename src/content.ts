@@ -26,6 +26,13 @@ import logisticsDeliveryImage from "./assets/services/logistics-delivery.webp";
 import officeStationeryImage from "./assets/services/office-stationery.webp";
 import packagingImage from "./assets/services/packaging.webp";
 import procurementManagementImage from "./assets/services/procurement-management.webp";
+import adaletBakanligiLogo from "./assets/references/adalet-bakanligi.jpg";
+import adliTipKurumuLogo from "./assets/references/adli-tip-kurumu.png";
+import bigChefsLogo from "./assets/references/bigchefs.png";
+import hatayBuyuksehirBelediyesiLogo from "./assets/references/hatay-buyuksehir-belediyesi.png";
+import istanbulCumhuriyetBassavciligiLogo from "./assets/references/istanbul-cumhuriyet-bassavciligi.png";
+import pasifikGyoLogo from "./assets/references/pasifik-gyo.svg";
+import trakyaUniversitesiLogo from "./assets/references/trakya-universitesi.png";
 
 export type Language = "tr" | "en";
 
@@ -34,10 +41,21 @@ export const languages: Record<Language, string> = {
   en: "EN",
 };
 
+export const referenceLogos = [
+  { name: "Adalet Bakanlığı", logo: adaletBakanligiLogo, alt: "Adalet Bakanlığı logosu", scaleClass: "is-seal" },
+  { name: "Adli Tıp Kurumu", logo: adliTipKurumuLogo, alt: "Adli Tıp Kurumu logosu", scaleClass: "is-horizontal" },
+  { name: "İstanbul Cumhuriyet Başsavcılığı", logo: istanbulCumhuriyetBassavciligiLogo, alt: "İstanbul Cumhuriyet Başsavcılığı logosu", scaleClass: "is-seal" },
+  { name: "Pasifik GYO", logo: pasifikGyoLogo, alt: "Pasifik GYO logosu", scaleClass: "is-horizontal" },
+  { name: "BigChefs", logo: bigChefsLogo, alt: "BigChefs logosu", scaleClass: "is-brand" },
+  { name: "Trakya Üniversitesi", logo: trakyaUniversitesiLogo, alt: "Trakya Üniversitesi logosu", scaleClass: "is-university" },
+  { name: "Hatay Büyükşehir Belediyesi", logo: hatayBuyuksehirBelediyesiLogo, alt: "Hatay Büyükşehir Belediyesi logosu", scaleClass: "is-horizontal is-reverse" },
+] as const;
+
 export const content = {
   tr: {
     nav: {
       services: "Hizmetler",
+      references: "Referanslar",
       process: "Süreç",
       principles: "Neden Biz",
       contact: "İletişim",
@@ -62,17 +80,17 @@ export const content = {
       items: [
         {
           icon: MapPinned,
-          title: "Kamu kurumları ve belediyeler",
+          title: "Kamu Kurumları ve Belediyeler",
           copy: "Belge, teklif ve teslimat takibi gerektiren toplu ürün alımlarında düzenli tedarik akışı kurulur.",
         },
         {
           icon: Boxes,
-          title: "Ofisler, tesisler ve işletmeler",
+          title: "Ofisler, Tesisler ve İşletmeler",
           copy: "Temizlik, kırtasiye, ambalaj ve günlük sarf ihtiyaçları tek merkezden planlanır.",
         },
         {
           icon: ShoppingBasket,
-          title: "Yemekhane ve etkinlik operasyonları",
+          title: "Yemekhane ve Etkinlik Operasyonları",
           copy: "Gıda, ikram, mutfak sarfı ve destek ürünleri için hızlı teklif ve teslimat koordinasyonu sağlanır.",
         },
       ],
@@ -80,15 +98,7 @@ export const content = {
     references: {
       label: "Referanslarımız",
       title: "Farklı sektörlerde güvene dayalı tedarik ilişkileri.",
-      note: "Gösterimdeki marka adları ve logolar örnek yer tutuculardır.",
-      items: [
-        { mark: "AE", name: "Arvena Endüstri" },
-        { mark: "KY", name: "Kenterra Yapı" },
-        { mark: "VT", name: "Velora Tesis" },
-        { mark: "PA", name: "Paketra Ambalaj" },
-        { mark: "RG", name: "Rota Gıda" },
-        { mark: "DO", name: "Denge Ofis" },
-      ],
+      items: referenceLogos,
     },
     services: {
       title: "Ürün ve hizmet grupları",
@@ -107,7 +117,7 @@ export const content = {
         {
           id: "procurement-management",
           icon: ClipboardCheck,
-          title: "Kurumsal tedarik yönetimi",
+          title: "Kurumsal Tedarik Yönetimi",
           copy: "Kamu ve özel sektör kurumlarının çok kalemli ürün ihtiyaçları planlı, belgeli ve takip edilebilir şekilde yönetilir.",
           image: procurementManagementImage,
           imageAlt: "Depoda ürün ve stok planlamasını tablet üzerinden değerlendiren iki çalışan",
@@ -121,7 +131,7 @@ export const content = {
         {
           id: "logistics-delivery",
           icon: Truck,
-          title: "Lojistik ve teslimat hizmetleri",
+          title: "Lojistik ve Teslimat Hizmetleri",
           copy: "Onaylanan siparişler için teslimat planı oluşturulur; ürünlerin zamanında ve eksiksiz ulaşması takip edilir.",
           image: logisticsDeliveryImage,
           imageAlt: "Depo rafları arasında kutu taşıyan iki lojistik çalışanı",
@@ -135,7 +145,7 @@ export const content = {
         {
           id: "cleaning-hygiene",
           icon: ShieldCheck,
-          title: "Temizlik ve hijyen ürünleri",
+          title: "Temizlik ve Hijyen Ürünleri",
           copy: "Kurumsal alanlarda kullanılan temizlik, hijyen, sarf ve bakım ürünleri için toptan tedarik desteği sunulur.",
           image: cleaningHygieneImage,
           imageAlt: "Sarı koruyucu eldivenlerle tutulan temizlik spreyi ve sünger",
@@ -149,7 +159,7 @@ export const content = {
         {
           id: "food-kitchen",
           icon: ShoppingBasket,
-          title: "Gıda ve mutfak sarf ürünleri",
+          title: "Gıda ve Mutfak Sarf Ürünleri",
           copy: "Kurum mutfakları, yemekhaneler, etkinlikler ve operasyonel tüketimler için gıda ve ikram ürünleri temin edilir.",
           image: foodKitchenImage,
           imageAlt: "Profesyonel bir mutfakta hazırlık yapan aşçı ve mutfak ekipmanları",
@@ -163,7 +173,7 @@ export const content = {
         {
           id: "packaging",
           icon: PackageCheck,
-          title: "Ambalaj ve paketleme çözümleri",
+          title: "Ambalaj ve Paketleme Çözümleri",
           copy: "Koli, poşet, streç, bant ve paketleme sarflarında ticari ve endüstriyel kullanıma uygun seçenekler sunulur.",
           image: packagingImage,
           imageAlt: "Bir koliyi bant makinesiyle kapatan paketleme çalışanının elleri",
@@ -177,7 +187,7 @@ export const content = {
         {
           id: "office-stationery",
           icon: Boxes,
-          title: "Ofis ve kırtasiye ürünleri",
+          title: "Ofis ve Kırtasiye Ürünleri",
           copy: "Ofislerin düzenli ihtiyaç duyduğu kırtasiye, yazıcı sarf, büro malzemeleri ve destek ürünleri ekonomik şekilde tedarik edilir.",
           image: officeStationeryImage,
           imageAlt: "Masa üzerinde düzenlenmiş defter, kalem, cetvel ve ofis sarf malzemeleri",
@@ -191,7 +201,7 @@ export const content = {
         {
           id: "construction-materials",
           icon: Building2,
-          title: "İnşaat ve yapı malzemeleri",
+          title: "İnşaat ve Yapı Malzemeleri",
           copy: "Tadilat, bakım ve proje ihtiyaçları için yapı malzemeleri, hırdavat, boya, yalıtım ve tamamlayıcı ürünlerin tedariği koordine edilir.",
           image: constructionMaterialsImage,
           imageAlt: "Tadilat alanında yapı malzemeleri, boya kovaları ve uygulama ekipmanları",
@@ -205,7 +215,7 @@ export const content = {
         {
           id: "electrical-supplies",
           icon: Zap,
-          title: "Elektrik malzemeleri",
+          title: "Elektrik Malzemeleri",
           copy: "Kablo, aydınlatma, pano ekipmanları, anahtar-priz grupları ve tesisat sarfları proje şartlarına uygun seçeneklerle temin edilir.",
           image: electricalSuppliesImage,
           imageAlt: "Elektrik panosundaki bağlantıları ölçüm cihazıyla kontrol eden teknisyen",
@@ -219,7 +229,7 @@ export const content = {
         {
           id: "it-technology",
           icon: MonitorCog,
-          title: "Bilişim ve teknoloji ürünleri",
+          title: "Bilişim ve Teknoloji Ürünleri",
           copy: "Bilgisayar, çevre birimleri, ağ ekipmanları, yazıcı ve kurumsal teknoloji ihtiyaçları için ürün araştırması ve tedarik desteği sunulur.",
           image: itTechnologyImage,
           imageAlt: "Veri merkezindeki ağ cihazlarına bağlı düzenli veri kabloları",
@@ -281,16 +291,6 @@ export const content = {
           title: "Teslimat",
           copy: "Siparişiniz planlanan takvime göre teslim edilir; eksiksiz teslim ve süreç takibi sağlanır.",
         },
-      ],
-    },
-    quoteChecklist: {
-      title: "Teklif için hangi bilgiler yeterli?",
-      copy: "Detaylar net değilse bile kısa bir ihtiyaç özetiyle başlayabiliriz. Aşağıdaki bilgiler teklif hazırlığını hızlandırır.",
-      items: [
-        "Ürün grubu veya örnek ürün listesi",
-        "Yaklaşık adet, koli veya dönemsel tüketim bilgisi",
-        "Teslimat lokasyonu ve tercih edilen tarih aralığı",
-        "Marka, kalite, belge veya özel ambalaj beklentisi",
       ],
     },
     principles: {
@@ -374,6 +374,7 @@ export const content = {
   en: {
     nav: {
       services: "Services",
+      references: "References",
       process: "Process",
       principles: "Why Us",
       contact: "Contact",
@@ -416,15 +417,7 @@ export const content = {
     references: {
       label: "References",
       title: "Trusted supply relationships across different sectors.",
-      note: "The brand names and logos shown are sample placeholders.",
-      items: [
-        { mark: "AE", name: "Arvena Endüstri" },
-        { mark: "KY", name: "Kenterra Yapı" },
-        { mark: "VT", name: "Velora Tesis" },
-        { mark: "PA", name: "Paketra Ambalaj" },
-        { mark: "RG", name: "Rota Gıda" },
-        { mark: "DO", name: "Denge Ofis" },
-      ],
+      items: referenceLogos,
     },
     services: {
       title: "Product and service groups",
@@ -617,16 +610,6 @@ export const content = {
           title: "Delivery",
           copy: "Your order is delivered according to the planned schedule with complete delivery and process tracking.",
         },
-      ],
-    },
-    quoteChecklist: {
-      title: "What is enough for a quote?",
-      copy: "Even if the details are not fully clear, we can start with a short need summary. These points speed up quote preparation.",
-      items: [
-        "Product group or sample product list",
-        "Approximate quantity, package count, or periodical consumption",
-        "Delivery location and preferred date range",
-        "Brand, quality, certificate, or packaging expectations",
       ],
     },
     principles: {
