@@ -144,12 +144,26 @@ for (const language of ["tr", "en"]) {
         sectionIndexResponsive: (() => {
           const index = document.querySelector(".mobile-section-index");
           const trigger = document.querySelector(".mobile-section-trigger");
+          const triggerSurface = trigger ? getComputedStyle(trigger, "::before") : null;
+          const menu = document.querySelector(".mobile-section-menu");
+          const menuLink = menu?.querySelector("a");
+          const tab = document.querySelector(".mobile-section-tab");
           const oldIndicator = document.querySelector(".mobile-scroll-indicator");
-          if (!index || !trigger || oldIndicator) return false;
+          if (!index || !trigger || !triggerSurface || !menu || !menuLink || !tab || oldIndicator) return false;
           const isMobile = window.innerWidth <= 820;
           const triggerBox = trigger.getBoundingClientRect();
           return getComputedStyle(index).display === (isMobile ? "flex" : "none")
-            && (!isMobile || (triggerBox.width >= 44 && triggerBox.height >= 44));
+            && (!isMobile || (
+              triggerBox.width >= 44
+              && triggerBox.height >= 44
+              && getComputedStyle(trigger).borderRadius === "12px"
+              && triggerSurface.backgroundColor === "rgba(36, 51, 74, 0.92)"
+              && getComputedStyle(menu).borderRadius === "12px"
+              && getComputedStyle(menu).backgroundColor === "rgba(255, 255, 255, 0.94)"
+              && getComputedStyle(menu).backdropFilter === "blur(12px)"
+              && getComputedStyle(menuLink).borderRadius === "7px"
+              && getComputedStyle(tab).borderRadius === "3px"
+            ));
         })(),
         menuToggles: document.querySelectorAll(".menu-toggle").length,
       };
@@ -230,10 +244,17 @@ const sectionIndexOpens = (
   && await page.locator(".mobile-section-menu").isVisible()
   && await page.locator('.mobile-section-menu a[aria-current="location"]').count() === 1
 );
+const sectionIndexCopyReady = (
+  (await page.locator(".mobile-section-menu a").allTextContents()).map((label) => label.trim()).join("|")
+  === "Giriş|Süreç|Hizmetler|Referanslar|Neden Biz|İletişim"
+  && await page.locator(".mobile-section-readout small").count() === 0
+  && !(await page.locator("body").innerText()).includes("ŞU ANDA")
+  && !(await page.locator("body").innerText()).includes("NOW")
+);
 await page.locator(".language-switch button").nth(1).click();
 const sectionIndexTranslatesLive = (
   (await page.locator(".mobile-section-menu a").allTextContents()).map((label) => label.trim()).join("|")
-  === "Home|Process|Services|References|Why Us|Contact"
+  === "Intro|Process|Services|References|Why Us|Contact"
 );
 await page.locator(".language-switch button").first().click();
 await sectionTrigger.click();
@@ -356,6 +377,7 @@ console.log(JSON.stringify({
     currentSectionLabel,
     sectionLabelSettlesToTab,
     sectionIndexOpens,
+    sectionIndexCopyReady,
     sectionIndexTranslatesLive,
     sectionIndexStaysOpenOnScroll,
     sectionIndexClosesWithEscape,

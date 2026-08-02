@@ -132,7 +132,7 @@ export function App() {
   }, []);
 
   const mobileSections = useMemo(() => [
-    { id: "top" as const, label: language === "tr" ? "Başlangıç" : "Home" },
+    { id: "top" as const, label: language === "tr" ? "Giriş" : "Intro" },
     { id: sectionIds.process, label: t.nav.process },
     { id: sectionIds.services, label: t.nav.services },
     { id: sectionIds.references, label: t.nav.references },
@@ -297,7 +297,6 @@ export function App() {
           }}
         >
           <span className="mobile-section-readout">
-            <small>{language === "tr" ? "ŞU ANDA" : "NOW"}</small>
             <strong>{mobileSections.find((section) => section.id === activeSection)?.label}</strong>
           </span>
           <span className="mobile-section-tab" aria-hidden="true" />
