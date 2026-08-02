@@ -10,7 +10,9 @@ const sectionIds = {
   process: "process",
   principles: "principles",
   contact: "contact",
-};
+} as const;
+
+type MainSectionId = "top" | keyof typeof sectionIds;
 
 type SectionTitleBlockProps = {
   title: string;
@@ -81,7 +83,11 @@ export function App() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [formPreviewed, setFormPreviewed] = useState(false);
   const [openServiceId, setOpenServiceId] = useState<string | null>(null);
-  const scrollIndicatorRef = useRef<HTMLDivElement>(null);
+  const [activeSection, setActiveSection] = useState<MainSectionId>("top");
+  const [isSectionLabelVisible, setIsSectionLabelVisible] = useState(false);
+  const [isSectionIndexOpen, setIsSectionIndexOpen] = useState(false);
+  const sectionIndexRef = useRef<HTMLDivElement>(null);
+  const sectionIndexButtonRef = useRef<HTMLButtonElement>(null);
   const t = content[language];
   const year = useMemo(() => new Date().getFullYear(), []);
 
@@ -125,45 +131,84 @@ export function App() {
     return () => window.removeEventListener("scroll", updateHeaderState);
   }, []);
 
+  const mobileSections = useMemo(() => [
+    { id: "top" as const, label: language === "tr" ? "Başlangıç" : "Home" },
+    { id: sectionIds.process, label: t.nav.process },
+    { id: sectionIds.services, label: t.nav.services },
+    { id: sectionIds.references, label: t.nav.references },
+    { id: sectionIds.principles, label: t.nav.principles },
+    { id: sectionIds.contact, label: t.nav.contact },
+  ], [language, t.nav]);
+
   useEffect(() => {
     let frame = 0;
     let hideTimer = 0;
 
-    const updateProgress = () => {
+    const updateActiveSection = () => {
       frame = 0;
-      const indicator = scrollIndicatorRef.current;
-      if (!indicator) return;
+      const pageBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2;
+      if (pageBottom) {
+        setActiveSection("contact");
+        return;
+      }
 
-      const scrollRange = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-      const progress = Math.min(1, Math.max(0, window.scrollY / scrollRange));
-      indicator.style.setProperty("--scroll-offset", `${progress * 38}px`);
+      const marker = window.innerHeight * 0.34;
+      let nextSection: MainSectionId = "top";
+      mobileSections.forEach(({ id }) => {
+        const section = document.getElementById(id);
+        if (section && section.getBoundingClientRect().top <= marker) nextSection = id;
+      });
+      setActiveSection(nextSection);
     };
 
-    const requestProgressUpdate = () => {
-      if (!frame) frame = window.requestAnimationFrame(updateProgress);
+    const requestSectionUpdate = () => {
+      if (!frame) frame = window.requestAnimationFrame(updateActiveSection);
     };
 
     const handleScroll = () => {
-      const indicator = scrollIndicatorRef.current;
-      if (!indicator) return;
-
-      requestProgressUpdate();
-      indicator.classList.add("is-active");
+      requestSectionUpdate();
+      if (isSectionIndexOpen) return;
+      setIsSectionLabelVisible(true);
       window.clearTimeout(hideTimer);
-      hideTimer = window.setTimeout(() => indicator.classList.remove("is-active"), 650);
+      hideTimer = window.setTimeout(() => setIsSectionLabelVisible(false), 1000);
     };
 
-    updateProgress();
+    updateActiveSection();
     window.addEventListener("scroll", handleScroll, { passive: true });
-    window.addEventListener("resize", requestProgressUpdate);
+    window.addEventListener("resize", requestSectionUpdate);
 
     return () => {
       window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("resize", requestProgressUpdate);
+      window.removeEventListener("resize", requestSectionUpdate);
       window.cancelAnimationFrame(frame);
       window.clearTimeout(hideTimer);
     };
-  }, []);
+  }, [isSectionIndexOpen, mobileSections]);
+
+  useEffect(() => {
+    if (!isSectionIndexOpen) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!sectionIndexRef.current?.contains(event.target as Node)) {
+        setIsSectionIndexOpen(false);
+        setIsSectionLabelVisible(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsSectionIndexOpen(false);
+        setIsSectionLabelVisible(false);
+        sectionIndexButtonRef.current?.focus();
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isSectionIndexOpen]);
 
   const switchLanguage = (nextLanguage: Language) => {
     setLanguage(nextLanguage);
@@ -209,8 +254,54 @@ export function App() {
         </div>
       </header>
 
-      <div className="mobile-scroll-indicator" ref={scrollIndicatorRef} aria-hidden="true">
-        <span />
+      <div
+        className={`mobile-section-index ${isSectionLabelVisible || isSectionIndexOpen ? "is-label-visible" : ""} ${isSectionIndexOpen ? "is-open" : ""}`}
+        ref={sectionIndexRef}
+      >
+        <nav
+          className="mobile-section-menu"
+          id="mobile-section-menu"
+          aria-label={language === "tr" ? "Mobil bölüm navigasyonu" : "Mobile section navigation"}
+          aria-hidden={!isSectionIndexOpen}
+        >
+          {mobileSections.map((section) => (
+            <a
+              href={`#${section.id}`}
+              key={section.id}
+              aria-current={activeSection === section.id ? "location" : undefined}
+              tabIndex={isSectionIndexOpen ? 0 : -1}
+              onClick={() => {
+                setActiveSection(section.id);
+                setIsSectionIndexOpen(false);
+                setIsSectionLabelVisible(false);
+              }}
+            >
+              <span aria-hidden="true" />
+              {section.label}
+            </a>
+          ))}
+        </nav>
+        <button
+          className="mobile-section-trigger"
+          type="button"
+          ref={sectionIndexButtonRef}
+          aria-expanded={isSectionIndexOpen}
+          aria-controls="mobile-section-menu"
+          aria-label={language === "tr" ? "Bölüm dizinini aç" : "Open section index"}
+          onClick={() => {
+            setIsSectionIndexOpen((isOpen) => {
+              const nextOpen = !isOpen;
+              setIsSectionLabelVisible(nextOpen);
+              return nextOpen;
+            });
+          }}
+        >
+          <span className="mobile-section-readout">
+            <small>{language === "tr" ? "ŞU ANDA" : "NOW"}</small>
+            <strong>{mobileSections.find((section) => section.id === activeSection)?.label}</strong>
+          </span>
+          <span className="mobile-section-tab" aria-hidden="true" />
+        </button>
       </div>
 
       <main className="site-main" id="top">

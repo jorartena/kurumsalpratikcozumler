@@ -2,7 +2,7 @@ import { chromium } from "playwright-core";
 import { mkdir } from "node:fs/promises";
 
 const chrome = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
-const widths = [1440, 1180, 980, 820, 760, 560, 390, 320];
+const widths = [1440, 1180, 980, 820, 760, 560, 390, 360, 320];
 const issues = [];
 const consoleErrors = [];
 const failedRequests = [];
@@ -44,6 +44,7 @@ for (const language of ["tr", "en"]) {
         .filter((node) => {
           const style = getComputedStyle(node);
           if (style.display === "none" || style.visibility === "hidden" || node.classList.contains("sr-only")) return false;
+          if (node.closest(".mobile-section-index")) return false;
           return node.scrollWidth > node.clientWidth + 2 && style.overflowX !== "visible";
         })
         .slice(0, 8)
@@ -140,10 +141,15 @@ for (const language of ["tr", "en"]) {
             && languageSwitch.getBoundingClientRect().width > 0
             && getComputedStyle(nav).display === "none";
         })(),
-        scrollIndicatorResponsive: (() => {
-          const indicator = document.querySelector(".mobile-scroll-indicator");
-          if (!indicator) return false;
-          return getComputedStyle(indicator).display === (window.innerWidth <= 820 ? "block" : "none");
+        sectionIndexResponsive: (() => {
+          const index = document.querySelector(".mobile-section-index");
+          const trigger = document.querySelector(".mobile-section-trigger");
+          const oldIndicator = document.querySelector(".mobile-scroll-indicator");
+          if (!index || !trigger || oldIndicator) return false;
+          const isMobile = window.innerWidth <= 820;
+          const triggerBox = trigger.getBoundingClientRect();
+          return getComputedStyle(index).display === (isMobile ? "flex" : "none")
+            && (!isMobile || (triggerBox.width >= 44 && triggerBox.height >= 44));
         })(),
         menuToggles: document.querySelectorAll(".menu-toggle").length,
       };
@@ -183,7 +189,7 @@ for (const language of ["tr", "en"]) {
       || result.expandedServiceTriggers !== 1
       || result.visibleServiceImages !== 1
       || !result.mobileHeaderReady
-      || !result.scrollIndicatorResponsive
+      || !result.sectionIndexResponsive
       || result.menuToggles !== 0
     ) {
       issues.push({ language, width, ...result });
@@ -208,20 +214,52 @@ const mobileLanguageVisible = await page.locator(".language-switch").isVisible()
 const mobileNavHidden = !(await page.locator(".site-nav").isVisible());
 await page.evaluate(() => window.scrollTo(0, (document.documentElement.scrollHeight - window.innerHeight) / 2));
 await page.waitForTimeout(80);
-const scrollIndicatorTracksMidpoint = await page.locator(".mobile-scroll-indicator").evaluate((indicator) => {
-  const offset = Number.parseFloat(indicator.style.getPropertyValue("--scroll-offset"));
-  return indicator.classList.contains("is-active") && offset >= 17 && offset <= 21;
-});
-await page.screenshot({ path: "qa-screenshots/scroll-indicator-390-tr.png" });
-await page.waitForTimeout(700);
-const scrollIndicatorHidesWhenIdle = !(await page.locator(".mobile-scroll-indicator").evaluate(
-  (indicator) => indicator.classList.contains("is-active"),
+const sectionLabelShowsOnScroll = await page.locator(".mobile-section-index").evaluate(
+  (index) => index.classList.contains("is-label-visible"),
+);
+const currentSectionLabel = (await page.locator(".mobile-section-readout strong").textContent())?.trim();
+await page.screenshot({ path: "qa-screenshots/section-label-390-tr.png" });
+await page.waitForTimeout(1050);
+const sectionLabelSettlesToTab = !(await page.locator(".mobile-section-index").evaluate(
+  (index) => index.classList.contains("is-label-visible"),
 ));
+const sectionTrigger = page.locator(".mobile-section-trigger");
+await sectionTrigger.click();
+const sectionIndexOpens = (
+  await sectionTrigger.getAttribute("aria-expanded") === "true"
+  && await page.locator(".mobile-section-menu").isVisible()
+  && await page.locator('.mobile-section-menu a[aria-current="location"]').count() === 1
+);
+await page.locator(".language-switch button").nth(1).click();
+const sectionIndexTranslatesLive = (
+  (await page.locator(".mobile-section-menu a").allTextContents()).map((label) => label.trim()).join("|")
+  === "Home|Process|Services|References|Why Us|Contact"
+);
+await page.locator(".language-switch button").first().click();
+await sectionTrigger.click();
+await page.waitForTimeout(250);
+await page.screenshot({ path: "qa-screenshots/section-index-open-390-tr.png" });
+await page.evaluate(() => window.scrollBy(0, 240));
+await page.waitForTimeout(1050);
+const sectionIndexStaysOpenOnScroll = (
+  await sectionTrigger.getAttribute("aria-expanded") === "true"
+  && await page.locator(".mobile-section-index").evaluate((index) => index.classList.contains("is-label-visible"))
+);
+await page.keyboard.press("Escape");
+const sectionIndexClosesWithEscape = await sectionTrigger.getAttribute("aria-expanded") === "false";
+await sectionTrigger.click();
+await page.mouse.click(10, 400);
+const sectionIndexClosesOutside = await sectionTrigger.getAttribute("aria-expanded") === "false";
+await sectionTrigger.click();
+await page.locator('.mobile-section-menu a[href="#services"]').click();
+await page.waitForTimeout(650);
+const sectionSelectionWorks = (
+  await sectionTrigger.getAttribute("aria-expanded") === "false"
+  && await page.locator('.mobile-section-menu a[href="#services"]').getAttribute("aria-current") === "location"
+);
 await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
 await page.waitForTimeout(80);
-const scrollIndicatorReachesEnd = await page.locator(".mobile-scroll-indicator").evaluate((indicator) => (
-  Number.parseFloat(indicator.style.getPropertyValue("--scroll-offset")) >= 37
-));
+const sectionIndexEndsAtContact = await page.locator('.mobile-section-menu a[href="#contact"]').getAttribute("aria-current") === "location";
 await page.evaluate(() => window.scrollTo(0, 0));
 
 await page.locator("details").first().click();
@@ -314,9 +352,16 @@ console.log(JSON.stringify({
     mobileMenuToggleAbsent,
     mobileLanguageVisible,
     mobileNavHidden,
-    scrollIndicatorTracksMidpoint,
-    scrollIndicatorHidesWhenIdle,
-    scrollIndicatorReachesEnd,
+    sectionLabelShowsOnScroll,
+    currentSectionLabel,
+    sectionLabelSettlesToTab,
+    sectionIndexOpens,
+    sectionIndexTranslatesLive,
+    sectionIndexStaysOpenOnScroll,
+    sectionIndexClosesWithEscape,
+    sectionIndexClosesOutside,
+    sectionSelectionWorks,
+    sectionIndexEndsAtContact,
     faqOpen,
     invalidBlocked,
     previewSuccess,
