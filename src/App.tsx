@@ -1,5 +1,5 @@
-import { type FormEvent, useEffect, useMemo, useState } from "react";
-import { ArrowRight, ArrowUpRight, Check, ChevronDown, Globe2, MapPinned, Menu, X } from "lucide-react";
+import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { ArrowRight, ArrowUpRight, Check, ChevronDown, Globe2, MapPinned } from "lucide-react";
 import heroImage from "./assets/procurement-hero.png";
 import logo from "./assets/logo.svg";
 import { content, languages, type Language } from "./content";
@@ -78,10 +78,10 @@ function AnimatedStat({ target, suffix = "", label, delay }: AnimatedStatProps) 
 
 export function App() {
   const [language, setLanguage] = useState<Language>("tr");
-  const [menuOpen, setMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [formPreviewed, setFormPreviewed] = useState(false);
   const [openServiceId, setOpenServiceId] = useState<string | null>(null);
+  const scrollIndicatorRef = useRef<HTMLDivElement>(null);
   const t = content[language];
   const year = useMemo(() => new Date().getFullYear(), []);
 
@@ -126,17 +126,47 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    if (!menuOpen) return;
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMenuOpen(false);
+    let frame = 0;
+    let hideTimer = 0;
+
+    const updateProgress = () => {
+      frame = 0;
+      const indicator = scrollIndicatorRef.current;
+      if (!indicator) return;
+
+      const scrollRange = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+      const progress = Math.min(1, Math.max(0, window.scrollY / scrollRange));
+      indicator.style.setProperty("--scroll-offset", `${progress * 38}px`);
     };
-    window.addEventListener("keydown", closeOnEscape);
-    return () => window.removeEventListener("keydown", closeOnEscape);
-  }, [menuOpen]);
+
+    const requestProgressUpdate = () => {
+      if (!frame) frame = window.requestAnimationFrame(updateProgress);
+    };
+
+    const handleScroll = () => {
+      const indicator = scrollIndicatorRef.current;
+      if (!indicator) return;
+
+      requestProgressUpdate();
+      indicator.classList.add("is-active");
+      window.clearTimeout(hideTimer);
+      hideTimer = window.setTimeout(() => indicator.classList.remove("is-active"), 650);
+    };
+
+    updateProgress();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", requestProgressUpdate);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", requestProgressUpdate);
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(hideTimer);
+    };
+  }, []);
 
   const switchLanguage = (nextLanguage: Language) => {
     setLanguage(nextLanguage);
-    setMenuOpen(false);
     setFormPreviewed(false);
     document.documentElement.lang = nextLanguage;
   };
@@ -154,24 +184,13 @@ export function App() {
           <img className="brand-logo" src={logo} alt="" />
         </a>
 
-        <button
-          className="menu-toggle"
-          type="button"
-          onClick={() => setMenuOpen((open) => !open)}
-          aria-label={menuOpen ? (language === "tr" ? "Menüyü kapat" : "Close menu") : (language === "tr" ? "Menüyü aç" : "Open menu")}
-          aria-expanded={menuOpen}
-          aria-controls="header-actions"
-        >
-          {menuOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
-
-        <div className={`header-actions ${menuOpen ? "is-open" : ""}`} id="header-actions">
+        <div className="header-actions">
           <nav className="site-nav" aria-label={language === "tr" ? "Ana navigasyon" : "Main navigation"}>
-            <a href={`#${sectionIds.process}`} onClick={() => setMenuOpen(false)}>{t.nav.process}</a>
-            <a href={`#${sectionIds.services}`} onClick={() => setMenuOpen(false)}>{t.nav.services}</a>
-            <a href={`#${sectionIds.references}`} onClick={() => setMenuOpen(false)}>{t.nav.references}</a>
-            <a href={`#${sectionIds.principles}`} onClick={() => setMenuOpen(false)}>{t.nav.principles}</a>
-            <a href={`#${sectionIds.contact}`} onClick={() => setMenuOpen(false)}>{t.nav.contact}</a>
+            <a href={`#${sectionIds.process}`}>{t.nav.process}</a>
+            <a href={`#${sectionIds.services}`}>{t.nav.services}</a>
+            <a href={`#${sectionIds.references}`}>{t.nav.references}</a>
+            <a href={`#${sectionIds.principles}`}>{t.nav.principles}</a>
+            <a href={`#${sectionIds.contact}`}>{t.nav.contact}</a>
           </nav>
           <div className="language-switch" aria-label={language === "tr" ? "Dil seçimi" : "Language selection"}>
             <Globe2 size={16} aria-hidden="true" />
@@ -189,6 +208,10 @@ export function App() {
           </div>
         </div>
       </header>
+
+      <div className="mobile-scroll-indicator" ref={scrollIndicatorRef} aria-hidden="true">
+        <span />
+      </div>
 
       <main className="site-main" id="top">
         <section className="hero-section">

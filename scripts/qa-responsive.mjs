@@ -23,9 +23,6 @@ for (const language of ["tr", "en"]) {
     await page.goto("http://127.0.0.1:4177", { waitUntil: "networkidle" });
 
     if (language === "en") {
-      if (width <= 820) {
-        await page.getByRole("button", { name: "Menüyü aç" }).click();
-      }
       const languageButtons = page.locator(".language-switch button");
       const languageButtonCount = await languageButtons.count();
       if (languageButtonCount !== 2) {
@@ -131,6 +128,24 @@ for (const language of ["tr", "en"]) {
         openServiceDetails: document.querySelectorAll(".service-detail").length,
         expandedServiceTriggers: document.querySelectorAll('.service-trigger-hitbox[aria-expanded="true"]').length,
         visibleServiceImages: document.querySelectorAll(".service-detail img").length,
+        mobileHeaderReady: window.innerWidth > 820 || (() => {
+          const header = document.querySelector(".site-header");
+          const logo = document.querySelector(".brand-logo");
+          const languageSwitch = document.querySelector(".language-switch");
+          const nav = document.querySelector(".site-nav");
+          if (!header || !logo || !languageSwitch || !nav) return false;
+          const minimumLogoHeight = window.innerWidth <= 360 ? 44 : 47;
+          return header.getBoundingClientRect().height >= 77
+            && logo.getBoundingClientRect().height >= minimumLogoHeight
+            && languageSwitch.getBoundingClientRect().width > 0
+            && getComputedStyle(nav).display === "none";
+        })(),
+        scrollIndicatorResponsive: (() => {
+          const indicator = document.querySelector(".mobile-scroll-indicator");
+          if (!indicator) return false;
+          return getComputedStyle(indicator).display === (window.innerWidth <= 820 ? "block" : "none");
+        })(),
+        menuToggles: document.querySelectorAll(".menu-toggle").length,
       };
     });
 
@@ -167,6 +182,9 @@ for (const language of ["tr", "en"]) {
       || result.openServiceDetails !== 1
       || result.expandedServiceTriggers !== 1
       || result.visibleServiceImages !== 1
+      || !result.mobileHeaderReady
+      || !result.scrollIndicatorResponsive
+      || result.menuToggles !== 0
     ) {
       issues.push({ language, width, ...result });
     }
@@ -185,16 +203,26 @@ for (const language of ["tr", "en"]) {
 
 await page.setViewportSize({ width: 390, height: 844 });
 await page.goto("http://127.0.0.1:4177", { waitUntil: "networkidle" });
-await page.getByRole("button", { name: "Menüyü aç" }).click();
-const mobileMenuVisible = await page.locator(".header-actions").isVisible();
-await page.locator('.site-nav a[href="#references"]').click();
-const referencesNavClosesMenu = (
-  !(await page.locator(".header-actions").isVisible())
-  && new URL(page.url()).hash === "#references"
-);
-await page.getByRole("button", { name: "Menüyü aç" }).click();
-await page.keyboard.press("Escape");
-const mobileMenuClosed = !(await page.locator(".header-actions").isVisible());
+const mobileMenuToggleAbsent = await page.locator(".menu-toggle").count() === 0;
+const mobileLanguageVisible = await page.locator(".language-switch").isVisible();
+const mobileNavHidden = !(await page.locator(".site-nav").isVisible());
+await page.evaluate(() => window.scrollTo(0, (document.documentElement.scrollHeight - window.innerHeight) / 2));
+await page.waitForTimeout(80);
+const scrollIndicatorTracksMidpoint = await page.locator(".mobile-scroll-indicator").evaluate((indicator) => {
+  const offset = Number.parseFloat(indicator.style.getPropertyValue("--scroll-offset"));
+  return indicator.classList.contains("is-active") && offset >= 17 && offset <= 21;
+});
+await page.screenshot({ path: "qa-screenshots/scroll-indicator-390-tr.png" });
+await page.waitForTimeout(700);
+const scrollIndicatorHidesWhenIdle = !(await page.locator(".mobile-scroll-indicator").evaluate(
+  (indicator) => indicator.classList.contains("is-active"),
+));
+await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+await page.waitForTimeout(80);
+const scrollIndicatorReachesEnd = await page.locator(".mobile-scroll-indicator").evaluate((indicator) => (
+  Number.parseFloat(indicator.style.getPropertyValue("--scroll-offset")) >= 37
+));
+await page.evaluate(() => window.scrollTo(0, 0));
 
 await page.locator("details").first().click();
 const faqOpen = await page.locator("details").first().getAttribute("open") !== null;
@@ -238,7 +266,6 @@ for (let index = 0; index < await serviceTriggers.count(); index += 1) {
 }
 await serviceTriggers.last().click();
 await serviceTriggers.first().click();
-await page.getByRole("button", { name: "Menüyü aç" }).click();
 await page.locator(".language-switch button").nth(1).click();
 const servicePersistsAcrossLanguage = (
   await page.locator(".service-trigger-hitbox").first().getAttribute("aria-expanded") === "true"
@@ -250,7 +277,6 @@ await page.reload({ waitUntil: "networkidle" });
 await page.waitForTimeout(1700);
 const counterValuesBeforeLanguageChange = await page.locator(".hero-stats strong").allTextContents();
 const countersCompleteWithin1700 = counterValuesBeforeLanguageChange.join("|") === "9|40+|250+";
-await page.getByRole("button", { name: "Menüyü aç" }).click();
 await page.locator(".language-switch button").nth(1).click();
 const counterValuesAfterLanguageChange = await page.locator(".hero-stats strong").allTextContents();
 const countersPersistAcrossLanguage = (
@@ -285,9 +311,12 @@ const reducedMotionReferences = await page.evaluate(() => {
 console.log(JSON.stringify({
   issues,
   interactions: {
-    mobileMenuVisible,
-    referencesNavClosesMenu,
-    mobileMenuClosed,
+    mobileMenuToggleAbsent,
+    mobileLanguageVisible,
+    mobileNavHidden,
+    scrollIndicatorTracksMidpoint,
+    scrollIndicatorHidesWhenIdle,
+    scrollIndicatorReachesEnd,
     faqOpen,
     invalidBlocked,
     previewSuccess,
