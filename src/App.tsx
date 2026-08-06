@@ -13,6 +13,7 @@ const sectionIds = {
 } as const;
 
 type MainSectionId = "top" | keyof typeof sectionIds;
+type FormStatus = "idle" | "submitting" | "success" | "error";
 
 type SectionTitleBlockProps = {
   title: string;
@@ -81,7 +82,7 @@ function AnimatedStat({ target, suffix = "", label, delay }: AnimatedStatProps) 
 export function App() {
   const [language, setLanguage] = useState<Language>("tr");
   const [isScrolled, setIsScrolled] = useState(false);
-  const [formPreviewed, setFormPreviewed] = useState(false);
+  const [formStatus, setFormStatus] = useState<FormStatus>("idle");
   const [openServiceId, setOpenServiceId] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<MainSectionId>("top");
   const [isSectionLabelVisible, setIsSectionLabelVisible] = useState(false);
@@ -212,14 +213,31 @@ export function App() {
 
   const switchLanguage = (nextLanguage: Language) => {
     setLanguage(nextLanguage);
-    setFormPreviewed(false);
+    setFormStatus("idle");
     document.documentElement.lang = nextLanguage;
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!event.currentTarget.reportValidity()) return;
-    setFormPreviewed(true);
+    const form = event.currentTarget;
+    if (formStatus === "submitting" || !form.reportValidity()) return;
+
+    setFormStatus("submitting");
+
+    try {
+      const response = await fetch("https://formspree.io/f/mnpaqrbp", {
+        method: "POST",
+        body: new FormData(form),
+        headers: { Accept: "application/json" },
+      });
+
+      if (!response.ok) throw new Error("Form submission failed");
+
+      form.reset();
+      setFormStatus("success");
+    } catch {
+      setFormStatus("error");
+    }
   };
 
   return (
@@ -512,11 +530,16 @@ export function App() {
             <label>{t.contact.company}<input name="company" type="text" placeholder={t.contact.placeholders.company} autoComplete="organization" required /></label>
             <label>{language === "tr" ? "E-posta" : "Email"}<input name="email" type="email" placeholder={language === "tr" ? "ornek@firma.com" : "name@company.com"} autoComplete="email" required /></label>
             <label>{t.contact.message}<textarea name="message" rows={5} placeholder={t.contact.placeholders.message} required /></label>
-            <button className="button primary form-button" type="submit">{t.contact.submit}<ArrowRight size={18} /></button>
-            <p className={`form-note ${formPreviewed ? "is-success" : ""}`} role="status">
-              {formPreviewed
-                ? (language === "tr" ? "Form doğrulandı. Yayında gönderim e-posta servisine bağlanacaktır." : "Form validated. Live submission will connect to the email service.")
-                : (language === "tr" ? "Bu form şu an önizleme modundadır; bilgi göndermez." : "This form is in preview mode and does not send data.")}
+            <button className="button primary form-button" type="submit" disabled={formStatus === "submitting"}>
+              {formStatus === "submitting" ? t.contact.sending : t.contact.submit}<ArrowRight size={18} aria-hidden="true" />
+            </button>
+            <p
+              className={`form-note ${formStatus === "success" ? "is-success" : ""} ${formStatus === "error" ? "is-error" : ""}`}
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              {formStatus === "success" ? t.contact.success : formStatus === "error" ? t.contact.error : ""}
             </p>
           </form>
         </section>

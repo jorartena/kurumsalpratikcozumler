@@ -348,7 +348,9 @@ export const content = {
       contact: "E-posta",
       message: "Talep özeti",
       submit: "Teklif talebi gönder",
-      note: "Bu form şu an önizleme modundadır.",
+      sending: "Gönderiliyor...",
+      success: "Teklif talebiniz başarıyla gönderildi.",
+      error: "Teklif talebiniz gönderilemedi. Lütfen tekrar deneyin.",
       placeholders: {
         name: "Adınız ve soyadınız",
         company: "Kurum veya şirket adınız",
@@ -667,7 +669,9 @@ export const content = {
       contact: "Email",
       message: "Request summary",
       submit: "Send quote request",
-      note: "This form is currently in preview mode.",
+      sending: "Sending...",
+      success: "Your quote request has been sent successfully.",
+      error: "Your quote request could not be sent. Please try again.",
       placeholders: {
         name: "Your full name",
         company: "Institution or company name",

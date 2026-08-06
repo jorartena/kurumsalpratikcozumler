@@ -6,13 +6,44 @@ const widths = [1440, 1180, 980, 820, 760, 560, 390, 360, 320];
 const issues = [];
 const consoleErrors = [];
 const failedRequests = [];
+const formspreeEndpoint = "https://formspree.io/f/mnpaqrbp";
+const formRequests = [];
+let formResponseMode = "success";
+let suppressExpectedFormConsoleErrors = false;
 const browser = await chromium.launch({ executablePath: chrome, headless: true });
 const page = await browser.newPage();
+await page.route(formspreeEndpoint, async (route) => {
+  const request = route.request();
+  formRequests.push({
+    method: request.method(),
+    accept: request.headers().accept,
+    body: request.postData(),
+  });
+
+  if (formResponseMode === "delayed-success") {
+    await new Promise((resolve) => setTimeout(resolve, 220));
+  }
+  if (formResponseMode === "network-error") {
+    await new Promise((resolve) => setTimeout(resolve, 220));
+    await route.abort("failed");
+    return;
+  }
+  if (formResponseMode === "http-error") {
+    await route.fulfill({ status: 422, contentType: "application/json", body: JSON.stringify({ errors: [] }) });
+    return;
+  }
+
+  await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true }) });
+});
 page.on("console", (message) => {
-  if (message.type() === "error") consoleErrors.push(message.text());
+  if (message.type() === "error" && !suppressExpectedFormConsoleErrors) {
+    consoleErrors.push(message.text());
+  }
 });
 page.on("response", (response) => {
-  if (response.status() >= 400) failedRequests.push(`${response.status()} ${response.url()}`);
+  if (response.status() >= 400 && response.url() !== formspreeEndpoint) {
+    failedRequests.push(`${response.status()} ${response.url()}`);
+  }
 });
 
 await mkdir("qa-screenshots", { recursive: true });
@@ -286,14 +317,77 @@ await page.evaluate(() => window.scrollTo(0, 0));
 await page.locator("details").first().click();
 const faqOpen = await page.locator("details").first().getAttribute("open") !== null;
 
+const formRequestCountBeforeInvalidSubmit = formRequests.length;
 await page.getByRole("button", { name: "Teklif talebi gönder" }).click();
-const invalidBlocked = await page.locator(".form-note").getAttribute("class") === "form-note ";
+const invalidBlocked = (
+  formRequests.length === formRequestCountBeforeInvalidSubmit
+  && await page.locator(".form-note").textContent() === ""
+);
 await page.getByLabel("Ad Soyad").fill("Test Kullanıcı");
 await page.getByLabel("Kurum / Şirket").fill("Test Kurum");
 await page.getByLabel("E-posta").fill("test@example.com");
 await page.getByLabel("Talep özeti").fill("Test talebi");
+const formUrlBeforeSubmit = page.url();
+formResponseMode = "delayed-success";
+const submitButton = page.getByRole("button", { name: "Teklif talebi gönder" });
+await submitButton.click();
+await page.waitForTimeout(40);
+const submittingState = (
+  await page.getByRole("button", { name: "Gönderiliyor..." }).isDisabled()
+  && formRequests.length === formRequestCountBeforeInvalidSubmit + 1
+);
+await page.locator(".form-note.is-success").waitFor();
+const successState = (
+  await page.locator(".form-note").textContent() === "Teklif talebiniz başarıyla gönderildi."
+  && await page.getByLabel("Ad Soyad").inputValue() === ""
+  && await page.getByLabel("Kurum / Şirket").inputValue() === ""
+  && await page.getByLabel("E-posta").inputValue() === ""
+  && await page.getByLabel("Talep özeti").inputValue() === ""
+  && page.url() === formUrlBeforeSubmit
+  && await page.getByRole("button", { name: "Teklif talebi gönder" }).isEnabled()
+);
+const formRequestReady = (
+  formRequests.at(-1)?.method === "POST"
+  && formRequests.at(-1)?.accept === "application/json"
+  && formRequests.at(-1)?.body?.includes('name="name"')
+  && formRequests.at(-1)?.body?.includes("Test Kullanıcı")
+);
+
+await page.getByLabel("Ad Soyad").fill("Hata Kullanıcısı");
+await page.getByLabel("Kurum / Şirket").fill("Hata Kurumu");
+await page.getByLabel("E-posta").fill("hata@example.com");
+await page.getByLabel("Talep özeti").fill("Korunacak talep");
+formResponseMode = "http-error";
+suppressExpectedFormConsoleErrors = true;
 await page.getByRole("button", { name: "Teklif talebi gönder" }).click();
-const previewSuccess = (await page.locator(".form-note").getAttribute("class"))?.includes("is-success");
+await page.locator(".form-note.is-error").waitFor();
+suppressExpectedFormConsoleErrors = false;
+const httpErrorState = (
+  await page.locator(".form-note").textContent() === "Teklif talebiniz gönderilemedi. Lütfen tekrar deneyin."
+  && await page.getByLabel("Ad Soyad").inputValue() === "Hata Kullanıcısı"
+  && await page.getByLabel("Talep özeti").inputValue() === "Korunacak talep"
+  && await page.getByRole("button", { name: "Teklif talebi gönder" }).isEnabled()
+);
+
+await page.locator(".language-switch button").nth(1).click();
+const languageChangeClearsResult = (
+  await page.locator(".form-note").textContent() === ""
+  && !(await page.locator(".form-note").getAttribute("class"))?.includes("is-error")
+);
+formResponseMode = "network-error";
+suppressExpectedFormConsoleErrors = true;
+await page.getByRole("button", { name: "Send quote request" }).click();
+await page.waitForTimeout(40);
+const englishSubmittingState = await page.getByRole("button", { name: "Sending..." }).isDisabled();
+await page.locator(".form-note.is-error").waitFor();
+suppressExpectedFormConsoleErrors = false;
+const networkErrorState = (
+  await page.locator(".form-note").textContent() === "Your quote request could not be sent. Please try again."
+  && await page.getByLabel("Full name").inputValue() === "Hata Kullanıcısı"
+  && await page.getByLabel("Request summary").inputValue() === "Korunacak talep"
+  && await page.getByRole("button", { name: "Send quote request" }).isEnabled()
+);
+await page.locator(".language-switch button").first().click();
 
 const serviceTriggers = page.locator(".service-trigger-hitbox");
 await serviceTriggers.first().focus();
@@ -386,7 +480,13 @@ console.log(JSON.stringify({
     sectionIndexEndsAtContact,
     faqOpen,
     invalidBlocked,
-    previewSuccess,
+    submittingState,
+    successState,
+    formRequestReady,
+    httpErrorState,
+    languageChangeClearsResult,
+    englishSubmittingState,
+    networkErrorState,
     serviceEnterOpens,
     serviceSpaceOpens,
     serviceCloses,
